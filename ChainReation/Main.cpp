@@ -9,9 +9,6 @@
 #include "Field.cpp"
 
 
-//Test
-
-
 class Spielfeld {
 private:
     Feld** spielfeld;
