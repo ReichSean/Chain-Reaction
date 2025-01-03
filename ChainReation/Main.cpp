@@ -49,7 +49,7 @@ public:
                 const Feld& feld = spielfeld[i][j];
 
                 if (feld.getAnzahl() == 0) {
-                    // Wenn das Feld leer ist, wei�e Null ausgeben
+                    // Wenn das Feld leer ist, weiße Null ausgeben
                     std::cout << getAnsiCode(Farbe::Weiss) << "0" << getAnsiCode(Farbe::Reset) << " ";
                 }
                 else {
@@ -83,11 +83,10 @@ public:
         std::vector<std::pair<int, int>> explosionPositions;
 
         printSpielfeld();
-        
-        //hier am Anfang amfang die Ausgabe löschen (vielleicht)
-        //hier nen delay
+        score();
+       
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
         for (int x = 0; x < size; ++x) {
             for (int y = 0; y < size; ++y) {
@@ -142,57 +141,34 @@ public:
         feld.setOwner(nullptr);
     }
 
+    void score() {
+        // Map zur Speicherung von Spielern und deren Scores
+        std::map<Spieler*, int> scores;
 
-    //methode score macht hier wenig sinn, da der vector mit spielern im spiel ist, dadr�ber m�ssen wir reden
+        // Alle Felder durchgehen
+        for (int x = 0; x < size; ++x) {
+            for (int y = 0; y < size; ++y) {
+                Feld& feld = getFeld(x, y);
+                Spieler* owner = feld.getOwner();
+
+                // Felder ohne Besitzer ignorieren
+                if (owner == nullptr) continue;
+
+                // Score des Spielers um 1 erhöhen
+                scores[owner]++;
+            }
+        }
+
+        // Scores ausgeben
+        for (const auto& entry : scores) {
+            Spieler* player = entry.first;
+            int score = entry.second;
+
+            // Ausgabe mit Spielerfarbe
+            std::cout << getAnsiCode(player->getFarbe())
+                << player->getName() << ": " << score
+                << getAnsiCode(Farbe::Reset) << std::endl;
+        }
+    }
 
 };
-
-/*int main()
-{
-    std::cout << "Spielfeld erstellen...\n";
-
-    int size = 5;
-    Spielfeld mySpielfeld(size);
-
-    Spieler sean(Farbe::Blau, "Sean", false);
-    Spieler jonas(Farbe::Rot, "Jonas", false);
-
-
-
-    mySpielfeld.getFeld(2, 2).setOwner(&sean);
-    mySpielfeld.getFeld(2, 2).setAnzahl(3);
-
-
-    mySpielfeld.getFeld(2, 3).setOwner(&sean);
-    mySpielfeld.getFeld(2, 3).setAnzahl(3);
-
-    mySpielfeld.getFeld(2, 4).setOwner(&sean);
-    mySpielfeld.getFeld(2, 4).setAnzahl(3);
-
-
-    mySpielfeld.getFeld(1, 1).setOwner(&jonas);
-    mySpielfeld.getFeld(1, 1).setAnzahl(2);
-
-
-    mySpielfeld.printSpielfeld();
-
-    int wait1;
-    std::cin >> wait1;
-
-
-    mySpielfeld.getFeld(2, 2).hinzufuegen();
-
-    mySpielfeld.printSpielfeld();
-
-    int wait2;
-    std::cin >> wait2;
-
-
-
-    mySpielfeld.splash();
-
-    mySpielfeld.printSpielfeld();
-
-    int wait3;
-    std::cin >> wait3;
-}*/
