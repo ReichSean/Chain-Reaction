@@ -8,62 +8,46 @@
 int main()
 {
     std::cout << "Spielfeld erstellen...\n";
+    
 
-    int size = 5;
-    Spielfeld mySpielfeld(size);
+    Spiel game = Spiel();
 
-
+    game.setSpielfeld(new Spielfeld(5));
 
     Spieler sean(Farbe::Blau, "Sean", false);
     Spieler jonas(Farbe::Rot, "Jonas", false);
 
-
-
-
-    mySpielfeld.getFeld(2, 2).setOwner(&sean);
-    mySpielfeld.getFeld(2, 2).setAnzahl(3);
-
-
-    mySpielfeld.getFeld(2, 3).setOwner(&sean);
-    mySpielfeld.getFeld(2, 3).setAnzahl(3);
-
-    mySpielfeld.getFeld(2, 4).setOwner(&sean);
-    mySpielfeld.getFeld(2, 4).setAnzahl(3);
-
-
-    mySpielfeld.getFeld(1, 1).setOwner(&jonas);
-    mySpielfeld.getFeld(1, 1).setAnzahl(2);
-
-
-    mySpielfeld.printSpielfeld();
-
-    Spiel game = Spiel(mySpielfeld);
     game.hinzufügenSpieler(sean);
     game.hinzufügenSpieler(jonas);
 
+    game.getSpielfeld().getFeld(2, 2).setOwner(&sean);
+    game.getSpielfeld().getFeld(2, 2).setAnzahl(3);
+
+    game.getSpielfeld().getFeld(2, 3).setOwner(&sean);
+    game.getSpielfeld().getFeld(2, 3).setAnzahl(3);
+
+    game.getSpielfeld().getFeld(2, 4).setOwner(&sean);
+    game.getSpielfeld().getFeld(2, 4).setAnzahl(3);
+
+    game.getSpielfeld().getFeld(1, 1).setOwner(&jonas);
+    game.getSpielfeld().getFeld(1, 1).setAnzahl(2);
+
+    game.getSpielfeld().printSpielfeld();
+    
     game.spielSpeichern();
 
-    int wait1;
-    std::cin >> wait1;
-
-
-    mySpielfeld.getFeld(2, 2).hinzufuegen();
-
-   
+    game.getSpielfeld().getFeld(2, 2).hinzufuegen();
 
     int wait2;
     std::cin >> wait2;
 
-
-
-    mySpielfeld.splash();
+    game.getSpielfeld().splash();
 
    
 
     int wait3;
     std::cin >> wait3;
 
-    //Spiel newGame = Spiel().spielLaden(); //so geht nicht
     Spiel newGame = game.spielLaden(); //so schon, brauchen aber ja wenn wir frisch starten ein neues SPiel Objekt
     std::cout << "made it this far" << std::endl;
 

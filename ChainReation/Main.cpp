@@ -15,6 +15,8 @@ private:
     int size;
 
 public:
+    Spielfeld() {}
+
     Spielfeld(int size) : size(size) {
         spielfeld = new Feld * [size];
         for (int i = 0; i < size; ++i) {

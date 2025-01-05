@@ -8,19 +8,19 @@
 class Spiel {
 private:
 	std::vector<Spieler> spielerVector;
-	Spielfeld spielfeld;
+	Spielfeld* spielfeld;
 
 public:
-	Spiel() : spielfeld(1) {}
+	Spiel() : spielfeld(new Spielfeld()) {}
 
-	Spiel(Spielfeld& spielfeld) : spielfeld(spielfeld) {}
+	Spiel(Spielfeld* spielfeld) : spielfeld(spielfeld) {}
+	
 
-
-	void hinzufügenSpieler(Spieler spieler) { spielerVector.push_back(spieler); }
+	void hinzufügenSpieler(const Spieler& spieler) { spielerVector.push_back(spieler); }
 	const Spieler getSpieler(int x) const { return spielerVector[x]; }
 
-	const Spielfeld getSpielfeld() const { return spielfeld; }
-	void setSpielfeld(const Spielfeld& sf) { spielfeld = sf; }
+	Spielfeld& getSpielfeld() { return *spielfeld; }
+	void setSpielfeld(Spielfeld* sf) { spielfeld = sf; }
 
 	bool stringToBool(const std::string& s) const {
 		return (s == "true");
@@ -59,16 +59,16 @@ public:
 				spielstand << "Spieler: " << spieler.getId() << "," << spieler.getName() << "," << spieler.getIsAI() << ",";
 				spielstand << enumToString(spieler.getFarbe()) << "," << spieler.getScore() << std::endl; //hier Frage ob Score speichern oder sp�ter einfach berechnen aus den feldern? + Frage wegen Enum Farbe obs so passt
 			}
-			spielstand << "Feldgroe�e: " << spielfeld.getSize() << std::endl;
-			for (int i = 0; i < spielfeld.getSize(); i++) {
-				for (int j = 0; j < spielfeld.getSize(); j++) {
-					if (spielfeld.getFeld(i, j).getOwner() == nullptr) {
-						spielstand << "Feld: " << i << "," << j << "," << spielfeld.getFeld(i, j).getAnzahl() << ",";
+			spielstand << "Feldgroe�e: " << getSpielfeld().getSize() << std::endl;
+			for (int i = 0; i < getSpielfeld().getSize(); i++) {
+				for (int j = 0; j < getSpielfeld().getSize(); j++) {
+					if (getSpielfeld().getFeld(i, j).getOwner() == nullptr) {
+						spielstand << "Feld: " << i << "," << j << "," << getSpielfeld().getFeld(i, j).getAnzahl() << ",";
 						spielstand << -1 << std::endl;
 					}
 					else {
-						spielstand << "Feld: " << i << "," << j << "," << spielfeld.getFeld(i, j).getAnzahl() << ",";
-						spielstand << spielfeld.getFeld(i, j).getOwner()->getId() << std::endl;
+						spielstand << "Feld: " << i << "," << j << "," << getSpielfeld().getFeld(i, j).getAnzahl() << ",";
+						spielstand << getSpielfeld().getFeld(i, j).getOwner()->getId() << std::endl;
 					}
 
 				}
@@ -129,7 +129,7 @@ public:
 						zeilen = std::stoi(entry);
 						std::cout << "gelesene SpielfeldZeilen: " << zeilen << std::endl;
 					}
-					setSpielfeld(Spielfeld(zeilen));
+					setSpielfeld(new Spielfeld(zeilen));
 				}
 				else if (line.find("Feld: ") == 0) {
 					std::istringstream specStream(line.substr(6));
@@ -152,15 +152,15 @@ public:
 					if (std::getline(specStream, entry, ',')) {
 						ownerId = std::stoi(entry);
 						if (ownerId == -1) {
-							spielfeld.getFeld(zeile, spalte).setAnzahl(anzahlPunkte);
-							spielfeld.getFeld(zeile, spalte).setOwner(nullptr);
+							getSpielfeld().getFeld(zeile, spalte).setAnzahl(anzahlPunkte);
+							getSpielfeld().getFeld(zeile, spalte).setOwner(nullptr);
 						}
 						else {
 							for (Spieler& possibleOwner : spielerVector) {
 								if (possibleOwner.getId() == ownerId) {
-									spielfeld.getFeld(zeile, spalte).setAnzahl(anzahlPunkte);
-									spielfeld.getFeld(zeile, spalte).setOwner(&possibleOwner);
-									std::cout << "eingetragene Owner id: " << spielfeld.getFeld(zeile, spalte).getOwner()->getId() << std::endl;
+									getSpielfeld().getFeld(zeile, spalte).setAnzahl(anzahlPunkte);
+									getSpielfeld().getFeld(zeile, spalte).setOwner(&possibleOwner);
+									std::cout << "eingetragene Owner id: " << getSpielfeld().getFeld(zeile, spalte).getOwner()->getId() << std::endl;
 								}
 							}
 						}
@@ -174,5 +174,46 @@ public:
 		return *this; //hier knallts somehow bei Spiel().spielLaden()
 	}
 
+	void spielInitialisieren() {
+		int anzahlSpieler;
+		std::cout << "Wie viele Spieler machen mit?" << std::endl;
+		//checken dass Angabe zwischen 0 und 4 liegt
+		std::cin >> anzahlSpieler;
+		if(anzahlSpieler <= 2){
+			Spielfeld spielfeld(5);
+		}
+		else {
+			Spielfeld spielfeld(10);
+		}
+		for (int i = 0; i < anzahlSpieler; i++) {
+			std::string spielerName;
+			std::string spielerFarbe;
+			std::cout << "-------------------" << std::endl;
+			std::cout << "Bitte geben Sie einen Namen ein:" << std::endl;
+			std::cin >> spielerName;
+			std::cout << "Bitte geben Sie einee Farbe an:" << std::endl;
+			std::cin >> spielerFarbe;
+			//checken das nicht Farben doppelt vergeben werden
+			hinzufügenSpieler(Spieler(stringToEnum(spielerFarbe), spielerName, false));
+		}
+	}
+	/*
+	void spielen() {
+		
+		for(Spieler spieler : )
+		ersterZug();
+
+		zug();
+	}
+
+	void zug(Spieler spieler) {
+		getSpielfeld().printSpielfeld();
+
+	}
+
+	void ersterZug(Spieler spieler) {
+
+	}
+	*/
 	
 };
