@@ -64,9 +64,11 @@ public:
 
     void hinzufuegen() { anzahl++; }
 
+    /*
     const Feld& getFeld() const {
         return *this; // Gibt eine konstante Referenz auf das aktuelle Objekt zurück
     }
+    */
 
     void setAnzahl(int num) { anzahl = num; }
     int getAnzahl() const { return anzahl; }

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <array>
 #include "Main.cpp"
 
 class Spiel {
@@ -11,7 +12,9 @@ private:
 	Spielfeld* spielfeld;
 
 public:
-	Spiel() : spielfeld(new Spielfeld()) {}
+	Spiel() : spielfeld(nullptr) {
+		spielInitialisieren();
+	}
 
 	Spiel(Spielfeld* spielfeld) : spielfeld(spielfeld) {}
 	
@@ -180,10 +183,10 @@ public:
 		//checken dass Angabe zwischen 0 und 4 liegt
 		std::cin >> anzahlSpieler;
 		if(anzahlSpieler <= 2){
-			Spielfeld spielfeld(5);
+			setSpielfeld(new Spielfeld(5));
 		}
 		else {
-			Spielfeld spielfeld(10);
+			setSpielfeld(new Spielfeld(10));
 		}
 		for (int i = 0; i < anzahlSpieler; i++) {
 			std::string spielerName;
@@ -191,19 +194,54 @@ public:
 			std::cout << "-------------------" << std::endl;
 			std::cout << "Bitte geben Sie einen Namen ein:" << std::endl;
 			std::cin >> spielerName;
-			std::cout << "Bitte geben Sie einee Farbe an:" << std::endl;
+			std::cout << "Bitte geben Sie eine Farbe an:" << std::endl;
 			std::cin >> spielerFarbe;
 			//checken das nicht Farben doppelt vergeben werden
 			hinzufügenSpieler(Spieler(stringToEnum(spielerFarbe), spielerName, false));
 		}
 	}
-	/*
+
+	static int letterToNumber(char letter) {
+		switch (std::toupper(letter)) {
+		case 'A': return 0;
+		case 'B': return 1;
+		case 'C': return 2;
+		case 'D': return 3;
+		case 'E': return 4;
+		case 'F': return 5;
+		case 'G': return 6;
+		case 'H': return 7;
+		case 'I': return 8;
+		case 'J': return 9;
+		default: return -1; // Ungültiger Buchstabe
+		}
+	}
+
+	std::array<int, 2> getInput() {
+		std::cout << "Bitte waehle ein Feld" << std::endl;
+		std::string input;
+		std::cin >> input;
+		if (input.length() == 2 && std::isalpha(input[0]) && std::isdigit(input[1])) {
+			char firstChar = input[0];
+			char secondChar = input[1];
+			std::array<int, 2> koordinaten;
+			koordinaten[0] = letterToNumber(input[0]);
+			koordinaten[1] = static_cast<int>(input[1]-48); //Weil ASCII bei 48 anfängt
+			return koordinaten;
+		}
+		else {
+			std::cout << "Die Eingabe muss genau 2 Zeichen lang sein!" << std::endl;
+			getInput();
+		}
+	}
+	
 	void spielen() {
 		
-		for(Spieler spieler : )
-		ersterZug();
+		for (Spieler spieler : spielerVector) {
+			ersterZug(spieler);
+		}
 
-		zug();
+		//zug();
 	}
 
 	void zug(Spieler spieler) {
@@ -211,9 +249,19 @@ public:
 
 	}
 
-	void ersterZug(Spieler spieler) {
+	void ersterZug(Spieler& spieler) {
+		std::array<int, 2> koordinaten = getInput();
+		if (getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).getAnzahl() == 0) {
+			getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).setOwner(&spieler);
+			getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).hinzufuegen();
+			getSpielfeld().printSpielfeld();
+		}
+		else {
+			std::cout << "Waehle ein Feld, dass niemandem gehoert!" << std::endl;
+			ersterZug(spieler);
+		}
 
 	}
-	*/
+	
 	
 };
