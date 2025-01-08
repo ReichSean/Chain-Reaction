@@ -195,6 +195,8 @@ public:
 			std::cout << "Bitte geben Sie einen Namen ein:" << std::endl;
 			std::cin >> spielerName;
 
+			// Rot als Farbe für normale Spieler ausgeschlossen, da KI = Rot
+			
 			std::cout << "Bitte geben Sie eine Farbe an:" << std::endl;
 			std::cin >> spielerFarbe;
 			while (spielerFarbe == "Rot") {
@@ -205,15 +207,16 @@ public:
 			//checken das nicht Farben doppelt vergeben werden
 			hinzufügenSpieler(Spieler(stringToEnum(spielerFarbe), spielerName, false));
 		}
+		// Optionalen KI Gegner hinzufügen? 
 		int KI;
-			std::cout << "Macht ein KI auch mit? 1 - Ja  0 für Nein " << std::endl;
-			std::cin >> KI;
-			if (KI == 1){
-				//checken das nicht Farben doppelt vergeben werden
-				hinzufügenSpieler(Spieler(stringToEnum("Rot"), "Computer", true));
-			}
-			else {
-				std::cout << "Es wurd keine KI erstellt" << std::endl;
+		std::cout << "Macht ein KI auch mit? 1 - Ja  0 für Nein " << std::endl;
+	 	std::cin >> KI;
+		if (KI == 1){
+			// KI Spieler erstellen mit IsAI = true
+			hinzufügenSpieler(Spieler(stringToEnum("Rot"), "Computer", true));
+		}
+		else {
+			std::cout << "Es wurd keine KI erstellt" << std::endl;
 			}
 
 	}
@@ -233,6 +236,7 @@ public:
 		default: return -1; // Ungültiger Buchstabe
 		}
 	}
+	// ist das alpha-Zeichen getInput korrekt?
 	bool isValidLetter (char letter) {
 		char alpha = letter;
 		if (letterToNumber(alpha)==-1) {
@@ -273,8 +277,11 @@ public:
 		std::cout << "Spiel zu Ende" <<std::endl;
 	}
 
+
+	// Zugmethoden für Spieler und KI
+
 	void zug(Spieler& spieler) {
-		if (!spieler.isAI) {
+		if (!spieler.isAI) { // Zug für Nicht-KI Spieler, wenn KI-Spieler, dann KIZug(spieler), also else-Anweisung
 		std::cout << spieler.getName() << ", bitte waehle ein Feld" << std::endl;
 		std::array<int, 2> koordinaten = getInput();
 		if (getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).getOwner() == &spieler) {
@@ -292,33 +299,7 @@ public:
 	}
 	}
 
-
-	void ersterKIZug(Spieler& spieler) {
-        std::vector<Feld*> felderDesSpielers = besetzteFelder(spieler);
-            // Wenn Spieler kein Feld hat, alle FREIEN Felder in freieFelder speichern
-            std::vector<Feld*> freieFelder;
-
-            for (int i = 0; i < spielfeld->getSize(); i++) {
-                for (int j = 0; j < spielfeld->getSize(); j++) {
-                    Feld& feld = spielfeld->getFeld(i, j);
-                    if (feld.getOwner() == nullptr) {
-                        freieFelder.push_back(&feld);
-                    }
-                }
-            }
-            if (!freieFelder.empty()) {
-                std::random_device rd;  // Zufallszahlengenerator initialisieren
-                std::mt19937 gen(rd());
-                std::uniform_int_distribution<> dis(0, freieFelder.size() - 1);
-                int index = dis(gen);
-                Feld* feld = freieFelder[index];
-                feld->setOwner(&spieler);
-                feld->hinzufuegen();  // Erhöhe die Anzahl auf dem Feld
-                spielfeld->printSpielfeld();  // Zeige das Spielfeld an
-            }
-    }
-
-	void KIZug(Spieler& spieler) {
+	void KIZug(Spieler& spieler) {	
         std::vector<Feld*> felderDesSpielers = besetzteFelder(spieler);
             // Erhöhe das erste Feld, das der Spieler besitzt
             Feld* feld = felderDesSpielers[0];
@@ -328,26 +309,11 @@ public:
         
     }
 
-	std::vector<Feld*> besetzteFelder(const Spieler& spieler) {
-        std::vector<Feld*> felderDesSpielers;
-        for (int i = 0; i < spielfeld->getSize(); i++) {
-            for (int j = 0; j < spielfeld->getSize(); j++) {
-                Feld& feld = spielfeld->getFeld(i, j);
-                if (feld.getOwner() != nullptr && feld.getOwner()->getId() == spieler.getId()) {
-                    felderDesSpielers.push_back(&feld);
-                }
-            }
-        }
-        return felderDesSpielers;
-    }
+	// Erste Zugmethoden für Spieler und KI 
 
-	bool besitztSpielerFelder(const Spieler& spieler) {
-        std::vector<Feld*> felderDesSpielers = besetzteFelder(spieler);
-        return !felderDesSpielers.empty();  // Gibt true zurück, wenn der Vektor nicht leer ist
-    }
 
 	void ersterZug(Spieler& spieler) {
-		if (!spieler.isAI) {
+		if (!spieler.isAI) { // Erster Zug Methode für nicht KI Spieler, wenn KI ,dann else Anweisung
 		std::cout << "Bitte waehle ein Startfeld" << std::endl;
 		std::array<int, 2> koordinaten = getInput();
 		if (getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).getAnzahl() == 0) {
@@ -366,6 +332,56 @@ public:
 		ersterKIZug(spieler);
 	}
 	}
+
+	void ersterKIZug(Spieler& spieler) {
+            // Wenn Spieler kein Feld hat, alle FREIEN Felder in freieFelder speichern
+            std::vector<Feld*> freieFelder;
+
+            for (int i = 0; i < spielfeld->getSize(); i++) {
+                for (int j = 0; j < spielfeld->getSize(); j++) {
+                    Feld& feld = spielfeld->getFeld(i, j);
+                    if (feld.getOwner() == nullptr) {
+                        freieFelder.push_back(&feld);
+                    }
+                }
+            }
+			// Aus freien Feldern per Zufall eins auswählen für den Anfang
+            if (!freieFelder.empty()) {
+                std::random_device rd;  // Zufallszahlengenerator initialisieren
+                std::mt19937 gen(rd());
+                std::uniform_int_distribution<> dis(0, freieFelder.size() - 1);
+                int index = dis(gen);
+                Feld* feld = freieFelder[index];
+                feld->setOwner(&spieler);
+                feld->hinzufuegen();  // Erhöhe die Anzahl auf dem Feld
+                spielfeld->printSpielfeld();  // Zeige das Spielfeld an
+            }
+    }
+
+
+	// Rückgabe von allen Feldern, die dem Spieler gehören
+
+	std::vector<Feld*> besetzteFelder(const Spieler& spieler) {
+        std::vector<Feld*> felderDesSpielers;
+        for (int i = 0; i < spielfeld->getSize(); i++) {
+            for (int j = 0; j < spielfeld->getSize(); j++) {
+                Feld& feld = spielfeld->getFeld(i, j);
+                if (feld.getOwner() != nullptr && feld.getOwner()->getId() == spieler.getId()) {
+                    felderDesSpielers.push_back(&feld);
+                }
+            }
+        }
+        return felderDesSpielers;
+    }
+
+	// Prüfen ob ein SPieler überhaupt Felder besitzt
+
+	bool besitztSpielerFelder(const Spieler& spieler) {
+        std::vector<Feld*> felderDesSpielers = besetzteFelder(spieler);
+        return !felderDesSpielers.empty();  // Gibt true zurück, wenn der Vektor nicht leer ist
+    }
+
+	
 
 	bool finished() {
 		int spielerMitFeldern = 0;
