@@ -236,31 +236,38 @@ public:
 		default: return -1; // Ungültiger Buchstabe
 		}
 	}
-	bool isValidNumber(int number) {
-			if (number > getSpielfeld().getSize()) {
-				return false;
-			}
-			else {
-				return true;
-			}
-		}
 
-	// ist das alpha-Zeichen getInput korrekt?
-	bool isValidLetter (char letter) {
-		char alpha = letter;
-		if (letterToNumber(alpha)==-1) {
-			return false;
+	bool isValidNumber(char number) {
+    int num = number - '0';  // Konvertiere char zu int
+    int size = getSpielfeld().getSize();
+
+    if (size == 5) {
+			return num >= 0 && num < 5;  // Für 5x5 Spielfeld, Zahlen von 0 bis 4
+		} else if (size == 10) {
+			return num >= 0 && num < 10;  // Für 10x10 Spielfeld, Zahlen von 0 bis 9
 		}
-		else {
-			return true;
-		}
+    return false;  // Wenn die Größe unerwartet ist
 	}
+
+
+	bool isValidLetter(char letter) {
+    letter = std::toupper(letter);  // Konvertiere Buchstaben in Großbuchstaben
+    int size = getSpielfeld().getSize();
+
+	if (size == 5) {
+			return letter >= 'A' && letter <= 'E';
+		} else if (size == 10) {
+			return letter >= 'A' && letter <= 'J';
+		}
+    return false;  // Wenn die Größe unerwartet ist
+	}
+
 
 	std::array<int, 2> getInput() {
     while (true) {
         std::string input;
         std::cin >> input;
-        if (input.length() == 2 && isValidLetter(input[0]) && isnumber(input[1]) && (static_cast<int>(input[1]-48)-1)<= getSpielfeld().getSize()) {
+        if (input.length() == 2 && isValidLetter(input[0]) && isValidNumber(input[1])) {
             char firstChar = input[0];
             char secondChar = input[1];
             std::array<int, 2> koordinaten;
