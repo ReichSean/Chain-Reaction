@@ -218,7 +218,6 @@ public:
 	}
 
 	std::array<int, 2> getInput() {
-		std::cout << "Bitte waehle ein Feld" << std::endl;
 		std::string input;
 		std::cin >> input;
 		if (input.length() == 2 && std::isalpha(input[0]) && std::isdigit(input[1])) {
@@ -237,19 +236,32 @@ public:
 	
 	void spielen() {
 		
-		for (Spieler spieler : spielerVector) {
+		for (Spieler& spieler : spielerVector) {
 			ersterZug(spieler);
 		}
-
-		//zug();
+		while (true) {
+			for (Spieler& spieler : spielerVector) {
+				zug(spieler);
+			}
+		}
 	}
 
-	void zug(Spieler spieler) {
-		getSpielfeld().printSpielfeld();
+	void zug(Spieler& spieler) {
+		std::cout << spieler.getName() << ", bitte waehle ein Feld" << std::endl;
+		std::array<int, 2> koordinaten = getInput();
+		if (getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).getOwner() == &spieler) {
+			getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).hinzufuegen();
+			getSpielfeld().splash();
+		}
+		else {
+			std::cout << "Waehle ein Feld, welches dir gehoert!" << std::endl;
+			zug(spieler);
+		}
 
 	}
 
 	void ersterZug(Spieler& spieler) {
+		std::cout << "Bitte waehle ein Startfeld" << std::endl;
 		std::array<int, 2> koordinaten = getInput();
 		if (getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).getAnzahl() == 0) {
 			getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).setOwner(&spieler);
