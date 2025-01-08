@@ -236,6 +236,15 @@ public:
 		default: return -1; // Ungültiger Buchstabe
 		}
 	}
+	bool isValidNumber(int number) {
+			if (number > getSpielfeld().getSize()) {
+				return false;
+			}
+			else {
+				return true;
+			}
+		}
+
 	// ist das alpha-Zeichen getInput korrekt?
 	bool isValidLetter (char letter) {
 		char alpha = letter;
@@ -251,7 +260,7 @@ public:
     while (true) {
         std::string input;
         std::cin >> input;
-        if (input.length() == 2 && isValidLetter(input[0]) && std::isdigit(input[1])) {
+        if (input.length() == 2 && isValidLetter(input[0]) && isnumber(input[1]) && (static_cast<int>(input[1]-48)-1)<= getSpielfeld().getSize()) {
             char firstChar = input[0];
             char secondChar = input[1];
             std::array<int, 2> koordinaten;
@@ -259,7 +268,7 @@ public:
             koordinaten[1] = static_cast<int>(input[1]-48); //Weil ASCII bei 48 anfängt
             return koordinaten;
         } else {
-            std::cout << "Die Eingabe muss genau 2 Zeichen lang sein!" << std::endl;
+            std::cout << "Eingabe muss valider Buchstabe + valide Zahl der Länge 2 enthalten" << std::endl;
 			}
 		}
 	}
@@ -326,11 +335,9 @@ public:
 			ersterZug(spieler);
 		}
 
-	} 
-	else 
-	{
-		ersterKIZug(spieler);
-	}
+	}	else {
+			ersterKIZug(spieler);
+		}
 	}
 
 	void ersterKIZug(Spieler& spieler) {
