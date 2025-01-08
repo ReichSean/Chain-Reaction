@@ -1,4 +1,4 @@
-﻿#include <vector>
+#include <vector>
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -194,11 +194,28 @@ public:
 			std::cout << "-------------------" << std::endl;
 			std::cout << "Bitte geben Sie einen Namen ein:" << std::endl;
 			std::cin >> spielerName;
+
 			std::cout << "Bitte geben Sie eine Farbe an:" << std::endl;
 			std::cin >> spielerFarbe;
+			while (spielerFarbe == "Rot") {
+				std::cout << "Bitte geben Sie eine Farbe ausser 'Rot' an:" << std::endl;
+				std::cin >> spielerFarbe;
+			}
+
 			//checken das nicht Farben doppelt vergeben werden
 			hinzufügenSpieler(Spieler(stringToEnum(spielerFarbe), spielerName, false));
 		}
+		int KI;
+			std::cout << "Macht ein KI auch mit? 1 - Ja  0 für Nein " << std::endl;
+			std::cin >> KI;
+			if (KI == 1){
+				//checken das nicht Farben doppelt vergeben werden
+				hinzufügenSpieler(Spieler(stringToEnum("Rot"), "Computer", true));
+			}
+			else {
+				std::cout << "Es wurd keine KI erstellt" << std::endl;
+			}
+
 	}
 
 	static int letterToNumber(char letter) {
@@ -216,21 +233,30 @@ public:
 		default: return -1; // Ungültiger Buchstabe
 		}
 	}
-
-	std::array<int, 2> getInput() {
-		std::string input;
-		std::cin >> input;
-		if (input.length() == 2 && std::isalpha(input[0]) && std::isdigit(input[1])) {
-			char firstChar = input[0];
-			char secondChar = input[1];
-			std::array<int, 2> koordinaten;
-			koordinaten[0] = letterToNumber(input[0]);
-			koordinaten[1] = static_cast<int>(input[1]-48); //Weil ASCII bei 48 anfängt
-			return koordinaten;
+	bool isValidLetter (char letter) {
+		char alpha = letter;
+		if (letterToNumber(alpha)==-1) {
+			return false;
 		}
 		else {
-			std::cout << "Die Eingabe muss genau 2 Zeichen lang sein!" << std::endl;
-			getInput();
+			return true;
+		}
+	}
+
+	std::array<int, 2> getInput() {
+    while (true) {
+        std::string input;
+        std::cin >> input;
+        if (input.length() == 2 && isValidLetter(input[0]) && std::isdigit(input[1])) {
+            char firstChar = input[0];
+            char secondChar = input[1];
+            std::array<int, 2> koordinaten;
+            koordinaten[0] = letterToNumber(input[0]);
+            koordinaten[1] = static_cast<int>(input[1]-48); //Weil ASCII bei 48 anfängt
+            return koordinaten;
+        } else {
+            std::cout << "Die Eingabe muss genau 2 Zeichen lang sein!" << std::endl;
+			}
 		}
 	}
 	
@@ -239,14 +265,16 @@ public:
 		for (Spieler& spieler : spielerVector) {
 			ersterZug(spieler);
 		}
-		while (true) {
+		while (!finished()) {
 			for (Spieler& spieler : spielerVector) {
 				zug(spieler);
 			}
 		}
+		std::cout << "Spiel zu Ende" <<std::endl;
 	}
 
 	void zug(Spieler& spieler) {
+		if (!spieler.isAI) {
 		std::cout << spieler.getName() << ", bitte waehle ein Feld" << std::endl;
 		std::array<int, 2> koordinaten = getInput();
 		if (getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).getOwner() == &spieler) {
@@ -258,9 +286,68 @@ public:
 			zug(spieler);
 		}
 
+	} 
+	else {
+		KIZug(spieler);
+	}
 	}
 
+
+	void ersterKIZug(Spieler& spieler) {
+        std::vector<Feld*> felderDesSpielers = besetzteFelder(spieler);
+            // Wenn Spieler kein Feld hat, alle FREIEN Felder in freieFelder speichern
+            std::vector<Feld*> freieFelder;
+
+            for (int i = 0; i < spielfeld->getSize(); i++) {
+                for (int j = 0; j < spielfeld->getSize(); j++) {
+                    Feld& feld = spielfeld->getFeld(i, j);
+                    if (feld.getOwner() == nullptr) {
+                        freieFelder.push_back(&feld);
+                    }
+                }
+            }
+            if (!freieFelder.empty()) {
+                std::random_device rd;  // Zufallszahlengenerator initialisieren
+                std::mt19937 gen(rd());
+                std::uniform_int_distribution<> dis(0, freieFelder.size() - 1);
+                int index = dis(gen);
+                Feld* feld = freieFelder[index];
+                feld->setOwner(&spieler);
+                feld->hinzufuegen();  // Erhöhe die Anzahl auf dem Feld
+                spielfeld->printSpielfeld();  // Zeige das Spielfeld an
+            }
+    }
+
+	void KIZug(Spieler& spieler) {
+        std::vector<Feld*> felderDesSpielers = besetzteFelder(spieler);
+            // Erhöhe das erste Feld, das der Spieler besitzt
+            Feld* feld = felderDesSpielers[0];
+            feld->hinzufuegen();
+			spielfeld->splash();
+            spielfeld->printSpielfeld();  // Zeige das Spielfeld an
+        
+    }
+
+	std::vector<Feld*> besetzteFelder(const Spieler& spieler) {
+        std::vector<Feld*> felderDesSpielers;
+        for (int i = 0; i < spielfeld->getSize(); i++) {
+            for (int j = 0; j < spielfeld->getSize(); j++) {
+                Feld& feld = spielfeld->getFeld(i, j);
+                if (feld.getOwner() != nullptr && feld.getOwner()->getId() == spieler.getId()) {
+                    felderDesSpielers.push_back(&feld);
+                }
+            }
+        }
+        return felderDesSpielers;
+    }
+
+	bool besitztSpielerFelder(const Spieler& spieler) {
+        std::vector<Feld*> felderDesSpielers = besetzteFelder(spieler);
+        return !felderDesSpielers.empty();  // Gibt true zurück, wenn der Vektor nicht leer ist
+    }
+
 	void ersterZug(Spieler& spieler) {
+		if (!spieler.isAI) {
 		std::cout << "Bitte waehle ein Startfeld" << std::endl;
 		std::array<int, 2> koordinaten = getInput();
 		if (getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).getAnzahl() == 0) {
@@ -273,7 +360,45 @@ public:
 			ersterZug(spieler);
 		}
 
+	} 
+	else 
+	{
+		ersterKIZug(spieler);
 	}
+	}
+
+	bool finished() {
+		int spielerMitFeldern = 0;
+		for (const Spieler& spieler : spielerVector) {
+			if (besitztSpielerFelder(spieler)) {
+				spielerMitFeldern++;
+			}
+		}
+		return spielerMitFeldern <= 1; // Gibt true zurück, wenn nur noch ein Spieler oder keiner Felder besitzt
+	}
+
+
+	/*bool finished() {
+		std::map<int, int> spielerFelderZaehler;  // Speichert die ID des Spielers und die Anzahl der Felder, die er besitzt
+		// Durchlaufe das Spielfeld und zähle die Felder pro Spieler
+		for (int i = 0; i < spielfeld->getSize(); i++) {
+			for (int j = 0; j < spielfeld->getSize(); j++) {
+				Feld& feld = spielfeld->getFeld(i, j);
+				if (feld.getOwner() != nullptr) {
+					spielerFelderZaehler[feld.getOwner()->getId()]++;
+				}
+			}
+		}
+		// Zähle, wie viele Spieler tatsächlich Felder besitzen
+		int spielerMitFeldern = 0;
+		for (auto& zaehler : spielerFelderZaehler) {
+			if (zaehler.second > 0) {
+				spielerMitFeldern++;
+			}
+		}
+		// Spiel ist beendet, wenn nur noch ein Spieler Felder besitzt
+		return spielerMitFeldern == 1;
+	}*/
 	
 	
 };
