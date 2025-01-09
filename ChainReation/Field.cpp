@@ -2,7 +2,7 @@
 #include <vector>
 #include <string>
 #include <random>
-#include <chrono>  // Für system_clock
+#include <chrono>  // Fï¿½r system_clock
 
 
 enum class Farbe {
@@ -12,13 +12,12 @@ enum class Farbe {
 
 class Spieler {
 private:
-
-public:
-    std::string Name;
+   std::string Name;
     Farbe farbe;
     int id;
     bool isAI;
     int score;
+public:
     // Automatische Zuweisungn von id noch unklar !!!
     Spieler(Farbe farbe, const std::string& name, const bool isAI) : Name(name), farbe(farbe), id(generiereZufaelligeID()), isAI(isAI), score(0) {}
 
@@ -39,7 +38,7 @@ public:
     void setIsAI(bool b) { isAI = b; }
     int getIsAI() const { return isAI; }
 
-    // Zufällige ID, die im Konstruktor des Spielers erstellt wird
+    // Zufï¿½llige ID, die im Konstruktor des Spielers erstellt wird
     static int generiereZufaelligeID() {
         static std::mt19937 generator(std::chrono::system_clock::now().time_since_epoch().count()); // Zufallsgenerator
         static std::uniform_int_distribution<int> distribution(1, 10000);
@@ -51,14 +50,13 @@ public:
 
 class Feld {
 private:
-
-public:
     int anzahl;
     Spieler* owner;
+public:
 
     Feld() : anzahl(0), owner(nullptr) {}
 
-    Feld(int anzahl, Spieler* owner) // =0 unnötig
+    Feld(int anzahl, Spieler* owner) // =0 unnï¿½tig
         : anzahl(anzahl), owner(owner) {
     }
 
@@ -66,7 +64,7 @@ public:
 
     /*
     const Feld& getFeld() const {
-        return *this; // Gibt eine konstante Referenz auf das aktuelle Objekt zurück
+        return *this; // Gibt eine konstante Referenz auf das aktuelle Objekt zurï¿½ck
     }
     */
 
