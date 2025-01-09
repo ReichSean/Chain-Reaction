@@ -29,6 +29,11 @@ public:
 		return (s == "true");
 	}
 
+
+	std::vector<Spieler> getSpielerVector(){
+		return spielerVector;
+	};
+
 	const std::string enumToString(const Farbe& farbe) const {
 		switch (farbe) {
 		case Farbe::Rot: return "Rot";
@@ -262,7 +267,6 @@ public:
     return false;  // Wenn die Größe unerwartet ist
 	}
 
-
 	std::array<int, 2> getInput() {
     while (true) {
         std::string input;
@@ -287,17 +291,21 @@ public:
 		}
 		while (!finished()) {
 			for (Spieler& spieler : spielerVector) {
-				zug(spieler);
+				if (!finished()) {
+                zug(spieler);
+				} else {
+					std::cout << "Spiel zu Ende" << std::endl;
+					break;
+            		}
 			}
 		}
 		std::cout << "Spiel zu Ende" <<std::endl;
 	}
-
-
 	// Zugmethoden für Spieler und KI
 
 	void zug(Spieler& spieler) {
-		if (!spieler.isAI) { // Zug für Nicht-KI Spieler, wenn KI-Spieler, dann KIZug(spieler), also else-Anweisung
+	if(besitztSpielerFelder(spieler)){
+		if (!spieler.getIsAI()) { // Zug für Nicht-KI Spieler, wenn KI-Spieler, dann KIZug(spieler), also else-Anweisung
 		std::cout << spieler.getName() << ", bitte waehle ein Feld" << std::endl;
 		std::array<int, 2> koordinaten = getInput();
 		if (getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).getOwner() == &spieler) {
@@ -308,34 +316,42 @@ public:
 			std::cout << "Waehle ein Feld, welches dir gehoert!" << std::endl;
 			zug(spieler);
 		}
-
-	} 
+		} 
+		else {
+			KIZug(spieler);
+		}
+	}
 	else {
-		KIZug(spieler);
+		std::cout << spieler.getName() << " besitzt keine Felder mehr." << std::endl;
 	}
 	}
 
 	void KIZug(Spieler& spieler) {	
+		if(besitztSpielerFelder(spieler)){
         std::vector<Feld*> felderDesSpielers = besetzteFelder(spieler);
+			std::cout << spieler.getName() << " wählt ein Feld..." << std::endl;
+
             // Erhöhe das erste Feld, das der Spieler besitzt
             Feld* feld = felderDesSpielers[0];
             feld->hinzufuegen();
 			spielfeld->splash();
             spielfeld->printSpielfeld();  // Zeige das Spielfeld an
-        
+		}
+		else {
+		std::cout << spieler.getName() << " besitzt keine Felder mehr." << std::endl;
+		}
     }
 
 	// Erste Zugmethoden für Spieler und KI 
 
-
 	void ersterZug(Spieler& spieler) {
-		if (!spieler.isAI) { // Erster Zug Methode für nicht KI Spieler, wenn KI ,dann else Anweisung
-		std::cout << "Bitte waehle ein Startfeld" << std::endl;
+		if (!spieler.getIsAI()) { // Erster Zug Methode für nicht KI Spieler, wenn KI ,dann else Anweisung
+		std::cout << spieler.getName() << ", bitte waehle ein Startfeld" << std::endl;
 		std::array<int, 2> koordinaten = getInput();
 		if (getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).getAnzahl() == 0) {
 			getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).setOwner(&spieler);
 			getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).hinzufuegen();
-			getSpielfeld().printSpielfeld();
+			getSpielfeld().splash();
 		}
 		else {
 			std::cout << "Waehle ein Feld, dass niemandem gehoert!" << std::endl;
@@ -350,6 +366,7 @@ public:
 	void ersterKIZug(Spieler& spieler) {
             // Wenn Spieler kein Feld hat, alle FREIEN Felder in freieFelder speichern
             std::vector<Feld*> freieFelder;
+			std::cout << spieler.getName() << " wählt ein Startfeld..." << std::endl;
 
             for (int i = 0; i < spielfeld->getSize(); i++) {
                 for (int j = 0; j < spielfeld->getSize(); j++) {
@@ -368,10 +385,9 @@ public:
                 Feld* feld = freieFelder[index];
                 feld->setOwner(&spieler);
                 feld->hinzufuegen();  // Erhöhe die Anzahl auf dem Feld
-                spielfeld->printSpielfeld();  // Zeige das Spielfeld an
+                spielfeld->splash();  // Zeige das Spielfeld an
             }
     }
-
 
 	// Rückgabe von allen Feldern, die dem Spieler gehören
 
@@ -394,8 +410,6 @@ public:
         std::vector<Feld*> felderDesSpielers = besetzteFelder(spieler);
         return !felderDesSpielers.empty();  // Gibt true zurück, wenn der Vektor nicht leer ist
     }
-
-	
 
 	bool finished() {
 		int spielerMitFeldern = 0;
