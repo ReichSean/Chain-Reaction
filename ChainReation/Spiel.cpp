@@ -179,13 +179,15 @@ public:
 		}
 		fReader.close();
 		std::cout << "Spielstand erfolgreich geladen!" << std::endl;
-		return *this; //hier knallts somehow bei Spiel().spielLaden()
+		return *this;
 	}
 
 	void spielInitialisieren() {
 		int anzahlSpieler;
+		//TO DO: Zufällige Spielerreihenfolge
+		//TO DO Abfrage ob spiel erstellen doer laden falls eins vorhanen ist
 		std::cout << "Wie viele Spieler machen mit?" << std::endl;
-		//checken dass Angabe zwischen 0 und 4 liegt
+		// TO DO: checken dass Angabe zwischen 0 und 4 liegt
 		std::cin >> anzahlSpieler;
 		if(anzahlSpieler <= 2){
 			setSpielfeld(new Spielfeld(5));
@@ -204,24 +206,29 @@ public:
 			
 			std::cout << "Bitte geben Sie eine Farbe an:" << std::endl;
 			std::cin >> spielerFarbe;
-			while (spielerFarbe == "Rot") {
-				std::cout << "Bitte geben Sie eine Farbe ausser 'Rot' an:" << std::endl;
+			while (spielerFarbe == "Rot" || stringToEnum(spielerFarbe) == Farbe::Weiss || stringToEnum(spielerFarbe) == Farbe::Reset) {
+				if (spielerFarbe == "Rot") {
+					std::cout << "Bitte geben Sie eine Farbe ausser 'Rot' an:" << std::endl;
+				}
+				else {
+					std::cout << "Bitte geben Sie eine gueltige Farbe an:" << std::endl;
+				}
 				std::cin >> spielerFarbe;
 			}
 
-			//checken das nicht Farben doppelt vergeben werden
+			// TO DO: checken das nicht Farben doppelt vergeben werden
 			hinzufügenSpieler(Spieler(stringToEnum(spielerFarbe), spielerName, false));
 		}
 		// Optionalen KI Gegner hinzufügen? 
 		int KI;
-		std::cout << "Macht ein KI auch mit? 1 - Ja  0 für Nein " << std::endl;
+		std::cout << "Macht eine KI auch mit? 1 - Ja  0 - Nein " << std::endl;
 	 	std::cin >> KI;
 		if (KI == 1){
 			// KI Spieler erstellen mit IsAI = true
 			hinzufügenSpieler(Spieler(stringToEnum("Rot"), "Computer", true));
 		}
 		else {
-			std::cout << "Es wurd keine KI erstellt" << std::endl;
+			std::cout << "Es wurde keine KI erstellt" << std::endl;
 			}
 
 	}
@@ -247,9 +254,9 @@ public:
     int size = getSpielfeld().getSize();
 
     if (size == 5) {
-			return num >= 0 && num < 5;  // Für 5x5 Spielfeld, Zahlen von 0 bis 4
+			return num >= 1 && num <= 5;  // Für 5x5 Spielfeld, Zahlen von 0 bis 4
 		} else if (size == 10) {
-			return num >= 0 && num < 10;  // Für 10x10 Spielfeld, Zahlen von 0 bis 9
+			return num >= 1 && num <= 10;  // Für 10x10 Spielfeld, Zahlen von 0 bis 9
 		}
     return false;  // Wenn die Größe unerwartet ist
 	}
@@ -276,10 +283,10 @@ public:
             char secondChar = input[1];
             std::array<int, 2> koordinaten;
             koordinaten[0] = letterToNumber(input[0]);
-            koordinaten[1] = static_cast<int>(input[1]-48); //Weil ASCII bei 48 anfängt
+            koordinaten[1] = static_cast<int>(input[1]-49); //Weil ASCII bei 48 anfängt und Erste Feld = A1
             return koordinaten;
         } else {
-            std::cout << "Eingabe muss valider Buchstabe + valide Zahl der Länge 2 enthalten" << std::endl;
+            std::cout << "Eingabe muss valider Buchstabe + valide Zahl der Laenge 2 enthalten" << std::endl;
 			}
 		}
 	}
@@ -295,27 +302,26 @@ public:
                 zug(spieler);
 				} else {
 					std::cout << "Spiel zu Ende" << std::endl;
-					break;
+					return;
             		}
 			}
 		}
-		std::cout << "Spiel zu Ende" <<std::endl;
 	}
 	// Zugmethoden für Spieler und KI
 
 	void zug(Spieler& spieler) {
 	if(besitztSpielerFelder(spieler)){
 		if (!spieler.getIsAI()) { // Zug für Nicht-KI Spieler, wenn KI-Spieler, dann KIZug(spieler), also else-Anweisung
-		std::cout << spieler.getName() << ", bitte waehle ein Feld" << std::endl;
+		std::cout << spieler.getName() << ", bitte waehle ein Feld" << std::endl; //abfrage ob Spiel beenden und speichern
 		std::array<int, 2> koordinaten = getInput();
-		if (getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).getOwner() == &spieler) {
-			getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).hinzufuegen();
-			getSpielfeld().splash();
-		}
-		else {
-			std::cout << "Waehle ein Feld, welches dir gehoert!" << std::endl;
-			zug(spieler);
-		}
+			if (getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).getOwner() == &spieler) {
+				getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).hinzufuegen();
+				getSpielfeld().splash();
+			}
+			else {
+				std::cout << "Waehle ein Feld, welches dir gehoert!" << std::endl;
+				zug(spieler);
+			}
 		} 
 		else {
 			KIZug(spieler);
@@ -364,7 +370,7 @@ public:
 	}
 
 	void ersterKIZug(Spieler& spieler) {
-            // Wenn Spieler kein Feld hat, alle FREIEN Felder in freieFelder speichern
+            // Wenn KI kein Feld hat, alle FREIEN Felder in freieFelder speichern
             std::vector<Feld*> freieFelder;
 			std::cout << spieler.getName() << " wählt ein Startfeld..." << std::endl;
 
@@ -404,7 +410,7 @@ public:
         return felderDesSpielers;
     }
 
-	// Prüfen ob ein SPieler überhaupt Felder besitzt
+	// Prüfen ob ein Spieler Felder besitzt
 
 	bool besitztSpielerFelder(const Spieler& spieler) {
         std::vector<Feld*> felderDesSpielers = besetzteFelder(spieler);

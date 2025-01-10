@@ -9,7 +9,7 @@ int main()
 {
     std::cout << "Spielfeld erstellen...\n";
     
-
+    // TO DO: Pointer mit Smartpointer ersetzten und Klassen/ Methoden schön anordnen, Dateinamen bearbeiten
     Spiel game = Spiel();
 
     game.getSpielfeld().printSpielfeld();
