@@ -200,9 +200,18 @@ public:
 		for (int i = 0; i < anzahlSpieler; i++) {
 			std::string spielerName;
 			std::string spielerFarbe;
+			std::string teil;
 			std::cout << "--------------------------------------" << std::endl;
 			std::cout << "Bitte geben Sie einen Namen ein:" << std::endl;
-			std::cin >> spielerName;
+			while (std::cin >> teil) {
+				spielerName += teil;
+				if (std::cin.peek() == '\n') {
+					break; // Ende der Zeile prüfen
+				}
+				else {
+					spielerName += " ";
+				}
+			}
 
 			// Rot als Farbe für normale Spieler ausgeschlossen, da KI = Rot
 			
