@@ -292,23 +292,23 @@ public:
 	}
 
 	std::array<int, 2> getInput() {
-    while (true) {
-        std::string input;
-        std::cin >> input;
-        if (input.length() == 2 && isValidLetter(input[0]) && isValidNumber(input[1])) {
-            std::array<int, 2> koordinaten;
-            koordinaten[0] = static_cast<int>(input[1]-49); //Weil ASCII bei 48 anfängt und Erste Feld = A1
-			koordinaten[1] = letterToNumber(input[0]);
-            return koordinaten;
-		}
-		else if (input.length() == 3 && isValidLetter(input[0]) && isValidNumber(input[1] + input[2])) {
-			std::array<int, 2> koordinaten;
-			koordinaten[0] = static_cast<int>((input[1] + input[2]) - 49); //Weil ASCII bei 48 anfängt und Erste Feld = A1
-			koordinaten[1] = letterToNumber(input[0]);
-			return koordinaten;
-		}
-		else {
-            std::cout << "Eingabe muss valider Buchstabe + valide Zahl der Laenge 2 enthalten" << std::endl;
+		while (true) {
+			std::string input;
+			std::cin >> input;
+			if (input.length() == 2 && isValidLetter(input[0]) && isValidNumber(input[1])) {
+				std::array<int, 2> koordinaten;
+				koordinaten[0] = static_cast<int>(input[1] - 49); //Weil ASCII bei 48 anfängt und Erste Feld = A1
+				koordinaten[1] = letterToNumber(input[0]);
+				return koordinaten;
+			}
+			else if (input.length() == 3 && isValidLetter(input[0]) && isValidNumber(input[1]) && static_cast<int>(input[2]) - 48 == 0) {
+				std::array<int, 2> koordinaten;
+				koordinaten[0] = 9; // da zugriff auf Felder bei 0 beginnt -> eigentlicher Wert -1
+				koordinaten[1] = letterToNumber(input[0]);
+				return koordinaten;
+			}
+			else {
+				std::cout << "Eingabe muss validen Buchstaben und Zahlen innerhalb der Spielgrenzen haben!" << std::endl;
 			}
 		}
 	}
@@ -462,28 +462,4 @@ public:
     return true;  // Farbe ist verfügbar
 	}	
 
-
-	/*bool finished() {
-		std::map<int, int> spielerFelderZaehler;  // Speichert die ID des Spielers und die Anzahl der Felder, die er besitzt
-		// Durchlaufe das Spielfeld und zähle die Felder pro Spieler
-		for (int i = 0; i < spielfeld->getSize(); i++) {
-			for (int j = 0; j < spielfeld->getSize(); j++) {
-				Feld& feld = spielfeld->getFeld(i, j);
-				if (feld.getOwner() != nullptr) {
-					spielerFelderZaehler[feld.getOwner()->getId()]++;
-				}
-			}
-		}
-		// Zähle, wie viele Spieler tatsächlich Felder besitzen
-		int spielerMitFeldern = 0;
-		for (auto& zaehler : spielerFelderZaehler) {
-			if (zaehler.second > 0) {
-				spielerMitFeldern++;
-			}
-		}
-		// Spiel ist beendet, wenn nur noch ein Spieler Felder besitzt
-		return spielerMitFeldern == 1;
-	}*/
-	
-	
 };
