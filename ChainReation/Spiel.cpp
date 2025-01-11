@@ -4,6 +4,8 @@
 #include <fstream>
 #include <sstream>
 #include <array>
+#include <chrono>  
+#include <thread>
 #include "Spielfeld.cpp"
 
 class Spiel {
@@ -217,21 +219,32 @@ public:
 				}
 				std::cin >> spielerFarbe;
 			}
-
-			// TO DO: checken das nicht Farben doppelt vergeben werden
 			hinzufügenSpieler(Spieler(stringToEnum(spielerFarbe), spielerName, false));
 		}
 		// Optionalen KI Gegner hinzufügen? 
-		int KI;
-		std::cout << "Macht eine KI auch mit? 1 - Ja  0 - Nein " << std::endl;
-	 	std::cin >> KI;
-		if (KI == 1){
-			// KI Spieler erstellen mit IsAI = true
-			hinzufügenSpieler(Spieler(stringToEnum("Rot"), "Computer", true));
-		}
-		else {
-			std::cout << "Es wurde keine KI erstellt" << std::endl;
+		char KI;
+		bool gültigeEingabe = false;
+
+		while (!gültigeEingabe) {
+			std::cout << "KI Spieler hinzufuegen? Y - Ja  N - Nein:" << std::endl;
+			std::cin >> KI;
+
+			KI = std::toupper(KI);
+
+			if (KI == 'Y' || KI == 'N') {
+				gültigeEingabe = true;
+				if (KI == 'Y') {
+					// KI Spieler erstellen mit IsAI = true und Name "Computer"
+					hinzufügenSpieler(Spieler(stringToEnum("Rot"), "Computer", true));
+				}
+				else {
+					std::cout << "Es wurde keine KI erstellt" << std::endl;
+				}
 			}
+			else {
+				std::cout << "Ungueltige Eingabe, bitte 'Y' fuer Ja oder 'N' fuer Nein eingeben." << std::endl;
+			}
+		}
 
 	}
 
@@ -341,12 +354,15 @@ public:
 	void KIZug(Spieler& spieler) {	
 		if(besitztSpielerFelder(spieler)){
         std::vector<Feld*> felderDesSpielers = besetzteFelder(spieler);
-			std::cout << spieler.getName() << " wählt ein Feld..." << std::endl;
-
+			
+			std::cout << spieler.getName() << " waehlt ein Feld..." << std::endl;
+			std::this_thread::sleep_for(std::chrono::milliseconds(1400));
+			
             // Erhöhe das erste Feld, das der Spieler besitzt
             Feld* feld = felderDesSpielers[0];
             feld->hinzufuegen();
 			spielfeld->splash();
+			
 		}
 		else {
 		std::cout << spieler.getName() << " besitzt keine Felder mehr." << std::endl;
@@ -377,7 +393,8 @@ public:
 	void ersterKIZug(Spieler& spieler) {
             // Wenn KI kein Feld hat, alle FREIEN Felder in freieFelder speichern
             std::vector<Feld*> freieFelder;
-			std::cout << spieler.getName() << " wählt ein Startfeld..." << std::endl;
+			std::cout << spieler.getName() << " waehlt ein Startfeld..." << std::endl;
+			std::this_thread::sleep_for(std::chrono::milliseconds(1400));
 
             for (int i = 0; i < spielfeld->getSize(); i++) {
                 for (int j = 0; j < spielfeld->getSize(); j++) {
