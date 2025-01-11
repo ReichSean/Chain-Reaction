@@ -24,6 +24,7 @@
     <ProjectGuid>{20dd3579-1fc3-4360-9bd8-6e2cee022a2a}</ProjectGuid>
     <RootNamespace>ChainReation</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>ChainReaction</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
