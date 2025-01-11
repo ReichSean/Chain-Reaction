@@ -185,12 +185,26 @@ public:
 	}
 
 	void spielInitialisieren() {
+		
+		bool gültigeAnzahlSpielerEingabe = false;
 		int anzahlSpieler;
-		//TO DO: Zufällige Spielerreihenfolge
-		//TO DO Abfrage ob spiel erstellen doer laden falls eins vorhanen ist
-		std::cout << "Wie viele Spieler machen mit?" << std::endl;
-		// TO DO: checken dass Angabe zwischen 0 und 4 liegt
-		std::cin >> anzahlSpieler;
+
+		// Eingabe der Spieleranzahl mit Überprüfung, ob die Zahl zwischen 1 und 4 liegt
+		while (!gültigeAnzahlSpielerEingabe) {
+			std::cout << "Wie viele Spieler machen mit? (1-4)" << std::endl;
+			std::cin >> anzahlSpieler;
+
+			// Eingabe validieren
+			if (std::cin.fail() || anzahlSpieler < 1 || anzahlSpieler > 4) {
+				std::cin.clear(); // Fehlerstatus zurücksetzen
+				std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Puffer leeren
+				std::cout << "Ungueltige Eingabe! Bitte gib eine Zahl zwischen 1 und 4 ein." << std::endl;
+			}
+			else {
+				gültigeAnzahlSpielerEingabe = true; // Gültige Eingabe
+			}
+		}
+		
 		if(anzahlSpieler <= 2){
 			setSpielfeld(new Spielfeld(5));
 		}
@@ -233,28 +247,37 @@ public:
 			}
 			hinzufügenSpieler(Spieler(stringToEnum(spielerFarbe), spielerName, false));
 		}
-		// Optionalen KI Gegner hinzufügen? 
+
 		char KI;
-		bool gültigeEingabe = false;
+		bool gültigeKIEingabe = false;
 
-		while (!gültigeEingabe) {
-			std::cout << "KI Spieler hinzufuegen? Y - Ja  N - Nein:" << std::endl;
-			std::cin >> KI;
+		if (anzahlSpieler == 1) {
+			// Wenn nur 1 Spieler, wird der KI-Spieler automatisch hinzugefügt
+			std::cout << "Da nur 1 Spieler mitmacht, wird automatisch ein KI-Spieler hinzugefügt." << std::endl;
+			hinzufügenSpieler(Spieler(stringToEnum("Rot"), "Computer", true));
+			std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+		}
+		else {
+			// Bei 2 bis 4 Spielern wird gefragt, ob ein KI-Spieler hinzugefügt werden soll
+			while (!gültigeKIEingabe) {
+				std::cout << "KI Spieler hinzufuegen? Y - Ja  N - Nein:" << std::endl;
+				std::cin >> KI;
 
-			KI = std::toupper(KI);
+				KI = std::toupper(KI);
 
-			if (KI == 'Y' || KI == 'N') {
-				gültigeEingabe = true;
-				if (KI == 'Y') {
-					// KI Spieler erstellen mit IsAI = true und Name "Computer"
-					hinzufügenSpieler(Spieler(stringToEnum("Rot"), "Computer", true));
+				if (KI == 'Y' || KI == 'N') {
+					gültigeKIEingabe = true;
+					if (KI == 'Y') {
+						// KI Spieler erstellen mit IsAI = true und Name "Computer"
+						hinzufügenSpieler(Spieler(stringToEnum("Rot"), "Computer", true));
+					}
+					else {
+						std::cout << "Es wurde keine KI erstellt" << std::endl;
+					}
 				}
 				else {
-					std::cout << "Es wurde keine KI erstellt" << std::endl;
+					std::cout << "Ungueltige Eingabe, bitte 'Y' fuer Ja oder 'N' fuer Nein eingeben." << std::endl;
 				}
-			}
-			else {
-				std::cout << "Ungueltige Eingabe, bitte 'Y' fuer Ja oder 'N' fuer Nein eingeben." << std::endl;
 			}
 		}
 
