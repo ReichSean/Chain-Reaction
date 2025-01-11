@@ -198,13 +198,13 @@ public:
 		for (int i = 0; i < anzahlSpieler; i++) {
 			std::string spielerName;
 			std::string spielerFarbe;
-			std::cout << "-------------------" << std::endl;
+			std::cout << "--------------------------------------" << std::endl;
 			std::cout << "Bitte geben Sie einen Namen ein:" << std::endl;
 			std::cin >> spielerName;
 
 			// Rot als Farbe für normale Spieler ausgeschlossen, da KI = Rot
 			
-			std::cout << "Bitte geben Sie eine Farbe an:" << std::endl;
+			std::cout << "Bitte geben Sie eine Farbe an (Gruen|Blau|Gelb|Magenta|Cyan):" << std::endl;
 			std::cin >> spielerFarbe;
 			while (spielerFarbe == "Rot" || stringToEnum(spielerFarbe) == Farbe::Weiss || stringToEnum(spielerFarbe) == Farbe::Reset
 			 || !istFarbeVerfuegbar(stringToEnum(spielerFarbe), spielerVector)) {
