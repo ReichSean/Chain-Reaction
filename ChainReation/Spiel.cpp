@@ -285,14 +285,14 @@ public:
 			koordinaten[1] = letterToNumber(input[0]);
             return koordinaten;
 		}
-		else if (input.length() == 3 && isValidLetter(input[0]) && isValidNumber(input[1] + input[2])) {
+		else if (input.length() == 3 && isValidLetter(input[0]) && isValidNumber(input[1]) && static_cast<int>(input[2]) - 48 == 0) {
 			std::array<int, 2> koordinaten;
-			koordinaten[0] = static_cast<int>((input[1] + input[2]) - 49); //Weil ASCII bei 48 anfängt und Erste Feld = A1
+			koordinaten[0] = 9; // da zugriff auf Felder bei 0 beginnt -> eigentlicher Wert -1
 			koordinaten[1] = letterToNumber(input[0]);
 			return koordinaten;
 		}
 		else {
-            std::cout << "Eingabe muss valider Buchstabe + valide Zahl der Laenge 2 enthalten" << std::endl;
+            std::cout << "Eingabe muss validen Buchstaben und Zahlen innerhalb der Spielgrenzen haben!" << std::endl;
 			}
 		}
 	}
