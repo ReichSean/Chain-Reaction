@@ -209,10 +209,13 @@ public:
 			std::cout << "Bitte geben Sie eine Farbe an (Gruen|Blau|Gelb|Magenta|Cyan):" << std::endl;
 			std::cin >> spielerFarbe;
 			while (spielerFarbe == "Rot" || stringToEnum(spielerFarbe) == Farbe::Weiss || stringToEnum(spielerFarbe) == Farbe::Reset
-			 || !istFarbeVerfuegbar(stringToEnum(spielerFarbe), spielerVector)) {
+			 || !istFarbeVerfuegbar(stringToEnum(spielerFarbe))) {
 
 				if (spielerFarbe == "Rot") {
 					std::cout << "Bitte geben Sie eine Farbe ausser 'Rot' an:" << std::endl;
+				}
+				if (istFarbeVerfuegbar(stringToEnum(spielerFarbe)) == false) {
+					std::cout << "Farbe bereits vergeben, bitte waehlen Sie eine andere Farbe" << std::endl;
 				}
 				else {
 					std::cout << "Bitte geben Sie eine gueltige Farbe an:" << std::endl;
@@ -450,7 +453,7 @@ public:
 		return spielerMitFeldern <= 1; // Gibt true zurück, wenn nur noch ein Spieler oder keiner Felder besitzt
 	}
 
-	bool istFarbeVerfuegbar(const Farbe& farbe, const std::vector<Spieler>& spielerVector) {
+	bool istFarbeVerfuegbar(const Farbe& farbe) {
     for (const auto& spieler : spielerVector) {
         if (spieler.getFarbe() == farbe) {
             return false;  // Farbe ist bereits vergeben
