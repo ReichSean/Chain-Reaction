@@ -15,16 +15,22 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Field.cpp">
+    <ClCompile Include="Feld.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="Main.cpp">
+    <ClCompile Include="Spielfeld.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="Spiel.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="Start.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="Spieler.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="Farbe.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>

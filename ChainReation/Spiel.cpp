@@ -4,7 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <array>
-#include "Main.cpp"
+#include "Spielfeld.cpp"
 
 class Spiel {
 private:
@@ -262,7 +262,6 @@ public:
 		}
     return false;  // Wenn die Größe unerwartet ist
 	}
-
 
 	bool isValidLetter(char letter) {
     letter = std::toupper(letter);  // Konvertiere Buchstaben in Großbuchstaben
