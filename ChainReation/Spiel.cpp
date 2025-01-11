@@ -348,7 +348,6 @@ public:
             Feld* feld = felderDesSpielers[0];
             feld->hinzufuegen();
 			spielfeld->splash();
-            spielfeld->printSpielfeld();  // Zeige das Spielfeld an
 		}
 		else {
 		std::cout << spieler.getName() << " besitzt keine Felder mehr." << std::endl;
@@ -363,7 +362,7 @@ public:
 		std::array<int, 2> koordinaten = getInput();
 		if (getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).getAnzahl() == 0) {
 			getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).setOwner(&spieler);
-			getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).hinzufuegen();
+			getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).setAnzahl(3);
 			getSpielfeld().splash();
 		}
 		else {
@@ -397,7 +396,8 @@ public:
                 int index = dis(gen);
                 Feld* feld = freieFelder[index];
                 feld->setOwner(&spieler);
-                feld->hinzufuegen();  // Erhöhe die Anzahl auf dem Feld
+                feld->setAnzahl(3);  // Erhöhe die Anzahl auf dem Feld
+                feld->setAnzahl(3);  // Erhöhe die Anzahl auf dem Feld
                 spielfeld->splash();  // Zeige das Spielfeld an
             }
     }

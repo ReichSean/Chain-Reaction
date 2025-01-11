@@ -1,4 +1,4 @@
-﻿
+﻿#include <cstdlib>
 #include <iostream>
 #include <vector>
 #include <map>
@@ -15,8 +15,6 @@ private:
     int size;
 
 public:
-    Spielfeld() {}
-
     Spielfeld(int size) : size(size) {
         spielfeld = new Feld * [size];
         for (int i = 0; i < size; ++i) {
@@ -46,6 +44,11 @@ public:
     }
 
     void printSpielfeld() const {
+        #ifdef _WIN32
+            system("cls");  // Windows
+        #else
+            system("clear");  // Linux/Mac
+        #endif
         std::cout << getAnsiCode(Farbe::Blau) << "   "; 
         for (int j = 0; j < size; ++j) {
             char columnLabel = 'A' + j; 
