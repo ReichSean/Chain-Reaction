@@ -279,13 +279,18 @@ public:
         std::string input;
         std::cin >> input;
         if (input.length() == 2 && isValidLetter(input[0]) && isValidNumber(input[1])) {
-            char firstChar = input[0];
-            char secondChar = input[1];
             std::array<int, 2> koordinaten;
-            koordinaten[0] = letterToNumber(input[0]);
-            koordinaten[1] = static_cast<int>(input[1]-49); //Weil ASCII bei 48 anfängt und Erste Feld = A1
+            koordinaten[0] = static_cast<int>(input[1]-49); //Weil ASCII bei 48 anfängt und Erste Feld = A1
+			koordinaten[1] = letterToNumber(input[0]);
             return koordinaten;
-        } else {
+		}
+		else if (input.length() == 3 && isValidLetter(input[0]) && isValidNumber(input[1] + input[2])) {
+			std::array<int, 2> koordinaten;
+			koordinaten[0] = static_cast<int>((input[1] + input[2]) - 49); //Weil ASCII bei 48 anfängt und Erste Feld = A1
+			koordinaten[1] = letterToNumber(input[0]);
+			return koordinaten;
+		}
+		else {
             std::cout << "Eingabe muss valider Buchstabe + valide Zahl der Laenge 2 enthalten" << std::endl;
 			}
 		}
