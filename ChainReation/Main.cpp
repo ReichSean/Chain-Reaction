@@ -46,7 +46,20 @@ public:
     }
 
     void printSpielfeld() const {
+        std::cout << getAnsiCode(Farbe::Blau) << "   "; 
+        for (int j = 0; j < size; ++j) {
+            char columnLabel = 'A' + j; 
+            std::cout << getAnsiCode(Farbe::Blau) << columnLabel << " " << getAnsiCode(Farbe::Reset);
+        }
+        std::cout << std::endl;
+
         for (int i = 0; i < size; ++i) {
+            std::cout << getAnsiCode(Farbe::Blau) << (i + 1) << " "; 
+
+            if (i + 1 < 10) {
+                std::cout << " "; //Platz, weil 10 länger als 1-9
+            }
+
             for (int j = 0; j < size; ++j) {
                 const Feld& feld = spielfeld[i][j];
 
@@ -60,7 +73,7 @@ public:
                         std::cout << getAnsiCode(feld.getOwner()->getFarbe()) << feld.getAnzahl() << getAnsiCode(Farbe::Reset) << " ";
                     }
                     else {
-                        // Falls kein Besitzer, aber Anzahl > 0, trotzdem Wei� verwenden
+                        // Falls kein Besitzer, aber Anzahl > 0, trotzdem Weiß verwenden
                         std::cout << getAnsiCode(Farbe::Weiss) << feld.getAnzahl() << getAnsiCode(Farbe::Reset) << " ";
                     }
                 }
