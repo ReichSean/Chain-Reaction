@@ -104,7 +104,7 @@ public:
         score();
        
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        std::this_thread::sleep_for(std::chrono::milliseconds(800));
 
         for (int x = 0; x < size; ++x) {
             for (int y = 0; y < size; ++y) {
