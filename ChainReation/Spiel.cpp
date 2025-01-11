@@ -195,7 +195,7 @@ public:
 			setSpielfeld(new Spielfeld(5));
 		}
 		else {
-			setSpielfeld(new Spielfeld(10));
+			setSpielfeld(new Spielfeld(7));
 		}
 		for (int i = 0; i < anzahlSpieler; i++) {
 			std::string spielerName;
@@ -282,8 +282,8 @@ public:
 
     if (size == 5) {
 			return num >= 1 && num <= 5;  // Für 5x5 Spielfeld, Zahlen von 0 bis 4
-		} else if (size == 10) {
-			return num >= 1 && num <= 10;  // Für 10x10 Spielfeld, Zahlen von 0 bis 9
+		} else if (size == 7) {
+			return num >= 1 && num <= 7;  // Für 10x10 Spielfeld, Zahlen von 0 bis 9
 		}
     return false;  // Wenn die Größe unerwartet ist
 	}
@@ -294,8 +294,8 @@ public:
 
 	if (size == 5) {
 			return letter >= 'A' && letter <= 'E';
-		} else if (size == 10) {
-			return letter >= 'A' && letter <= 'J';
+		} else if (size == 7) {
+			return letter >= 'A' && letter <= 'G';
 		}
     return false;  // Wenn die Größe unerwartet ist
 	}
@@ -307,12 +307,6 @@ public:
 			if (input.length() == 2 && isValidLetter(input[0]) && isValidNumber(input[1])) {
 				std::array<int, 2> koordinaten;
 				koordinaten[0] = static_cast<int>(input[1] - 49); //Weil ASCII bei 48 anfängt und Erste Feld = A1
-				koordinaten[1] = letterToNumber(input[0]);
-				return koordinaten;
-			}
-			else if (input.length() == 3 && isValidLetter(input[0]) && isValidNumber(input[1]) && static_cast<int>(input[2]) - 48 == 0) {
-				std::array<int, 2> koordinaten;
-				koordinaten[0] = 9; // da zugriff auf Felder bei 0 beginnt -> eigentlicher Wert -1
 				koordinaten[1] = letterToNumber(input[0]);
 				return koordinaten;
 			}
