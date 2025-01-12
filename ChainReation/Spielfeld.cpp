@@ -118,9 +118,38 @@ public:
             explosion(pos.first, pos.second);
         }
 
-        if (explosionOccurred) {
-            splash(); 
+     
+        int aktiveSpieler = 0;
+        std::shared_ptr<Spieler> ersterSpieler = nullptr;
+
+        for (int x = 0; x < size; ++x) {
+            for (int y = 0; y < size; ++y) {
+                Feld& feld = getFeld(x, y);
+                if (feld.getOwner() != nullptr) {
+                    if (ersterSpieler == nullptr) {
+                        ersterSpieler = feld.getOwner();
+                        aktiveSpieler = 1;
+                    }
+                    else if (feld.getOwner() != ersterSpieler) {
+                        aktiveSpieler = 2;
+                        break;
+                    }
+                }
+            }
+            if (aktiveSpieler == 2) {
+                break;
+            }
         }
+
+        if (aktiveSpieler <= 1) {
+            printSpielfeld();
+        }
+
+        //Falls es nur noch einen Spieler gibt soll Splash nicht nochmal aufgerufen werden
+        if (explosionOccurred && aktiveSpieler > 1) {
+            splash();
+        }
+
     }
 
     void explosion(int x, int y) {
