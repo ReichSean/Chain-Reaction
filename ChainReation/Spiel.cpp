@@ -255,7 +255,7 @@ public:
 		if (anzahlSpieler == 1) {
 			// Wenn nur 1 Spieler, wird der KI-Spieler automatisch hinzugefügt
 			std::cout << "Da nur 1 Spieler mitmacht, wird automatisch ein KI-Spieler hinzugefügt." << std::endl;
-			hinzufügenSpieler(Spieler(stringToEnum("Rot"), "Computer", true));
+			hinzufügenSpieler(std::make_shared<Spieler>(stringToEnum("Rot"), "Computer", true));
 			std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 		}
 		else {
