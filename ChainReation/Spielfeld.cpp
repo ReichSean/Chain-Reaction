@@ -158,7 +158,7 @@ public:
 
     void score() {
         // Map zur Speicherung von Spielern und deren Scores
-        std::map<Spieler*, int> scores;
+        std::map<std::shared_ptr<Spieler>, int> scores;
 
         // Alle Felder durchgehen
         for (int x = 0; x < size; ++x) {
@@ -170,13 +170,13 @@ public:
                 if (owner == nullptr) continue;
 
                 // Score des Spielers um 1 erhöhen
-                owner->setScore(owner->getScore() + 1);
+                scores[owner]++;
             }
         }
 
         // Scores ausgeben
         for (const auto& entry : scores) {
-            Spieler* player = entry.first;
+            std::shared_ptr<Spieler> player = entry.first;
             int score = entry.second;
 
             // Ausgabe mit Spielerfarbe

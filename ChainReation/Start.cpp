@@ -6,10 +6,10 @@
 #include "Spiel.cpp"
 
 void zeigeHauptmenue() {
-    std::cout << "Hauptmenü:\n";
+    std::cout << "Hauptmenue:\n";
     std::cout << "1. Neues Spiel starten\n";
     std::cout << "2. Spiel laden\n";
-    std::cout << "Wähle eine Option (1-2): ";
+    std::cout << "Waehle eine Option (1-2): ";
 }
 
 int main() {
@@ -25,10 +25,10 @@ int main() {
             break;
         case 2:
             std::cout << "Spielstand wird geladen...\n";
-            game = game.spielLaden();
+            game.spielLaden();
             break;
         default:
-            std::cout << "Ungültige Auswahl!\n";
+            std::cout << "Ungueltige Auswahl!\n";
             return 0;
     }
 
@@ -37,14 +37,14 @@ int main() {
 
     game.getSpielfeld().printSpielfeld();
     while (spielLaeuft) {
-        std::cout << "Drücke 'P' um das Spiel zu pausieren und zu speichern, 'Q' um zu beenden oder 'C' um fortzufahren.\n";
+        std::cout << "Druecke 'P' um das Spiel zu pausieren und zu speichern, 'Q' um zu beenden oder 'C' um fortzufahren.\n";
         std::cin >> eingabe;
 
         switch (eingabe) {
             case 'P':
             case 'p':
                 game.spielSpeichern();
-                std::cout << "Spiel pausiert und gespeichert. Drücke 'C' um fortzufahren.\n";
+                std::cout << "Spiel pausiert und gespeichert. Druecke 'C' um fortzufahren.\n";
                 break;
             case 'Q':
             case 'q':
@@ -55,7 +55,7 @@ int main() {
                 game.spielen();
                 break;
             default:
-                std::cout << "Ungültige Eingabe!\n";
+                std::cout << "Ungueltige Eingabe!\n";
                 break;
         }
     }
