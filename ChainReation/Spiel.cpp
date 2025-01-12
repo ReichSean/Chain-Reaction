@@ -401,6 +401,7 @@ public:
 	// Erste Zugmethoden für Spieler und KI 
 
 	void ersterZug(Spieler& spieler) {
+		getSpielfeld().printSpielfeld();
 		if (!spieler.getIsAI()) { // Erster Zug Methode für nicht KI Spieler, wenn KI ,dann else Anweisung
 		std::cout << spieler.getName() << ", bitte waehle ein Startfeld" << std::endl;
 		std::array<int, 2> koordinaten = getInput();
