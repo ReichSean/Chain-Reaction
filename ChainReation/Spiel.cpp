@@ -341,15 +341,22 @@ public:
 	
 	void spielen() {
 		getSpielfeld().printSpielfeld();
+		std::shared_ptr<Spieler> possibleWinner;
 		for (auto& spieler : spielerVector) {
 			ersterZug(spieler);
 		}
-		while (!finished()) {
+		bool running = true; // maybe noch anders lösen
+		while (running) {
 			for (auto& spieler : spielerVector) {
 				if (!finished()) {
-                zug(spieler);
+					possibleWinner = spieler;
+					zug(spieler);
 				} else {
+					running = false;
 					std::cout << "Spiel zu Ende" << std::endl;
+					if (possibleWinner != nullptr) {
+						std::cout << "Herzlichen Glueckwunsch, " << possibleWinner->getName() << "! Sie haben gewonnen!" << std::endl;
+					}
 					return;
             		}
 			}
@@ -401,6 +408,7 @@ public:
 	// Erste Zugmethoden für Spieler und KI 
 
 	void ersterZug(std::shared_ptr<Spieler>& spieler) {
+		getSpielfeld().printSpielfeld();
 		if (!spieler->getIsAI()) { // Erster Zug Methode für nicht KI Spieler, wenn KI ,dann else Anweisung
 		std::cout << spieler->getName() << ", bitte waehle ein Startfeld" << std::endl;
 		std::array<int, 2> koordinaten = getInput();

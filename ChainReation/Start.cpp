@@ -53,6 +53,7 @@ int main() {
             case 'C':
             case 'c':
                 game.spielen();
+                spielLaeuft = false;
                 break;
             default:
                 std::cout << "Ungueltige Eingabe!\n";
