@@ -1,3 +1,4 @@
+#include<memory>
 #include "Spieler.cpp"
 
 
@@ -6,12 +7,12 @@
 class Feld {
 private:
     int anzahl;
-    Spieler* owner;
+    std::shared_ptr<Spieler> owner;
 public:
 
     Feld() : anzahl(0), owner(nullptr) {}
 
-    Feld(int anzahl, Spieler* owner) // =0 unn�tig
+    Feld(int anzahl, std::shared_ptr<Spieler> owner) // =0 unn�tig
         : anzahl(anzahl), owner(owner) {
     }
 
@@ -20,10 +21,10 @@ public:
     void setAnzahl(int num) { anzahl = num; }
     int getAnzahl() const { return anzahl; }
 
-    void setOwner(Spieler* spieler) {
-        owner = spieler;
+    void setOwner(std::shared_ptr<Spieler> spieler) {
+        owner = spieler; // Zuweisung eines shared_ptr
     }
 
-    Spieler* getOwner() const { return owner; }
+    std::shared_ptr<Spieler> getOwner() const { return owner; }
 };
 

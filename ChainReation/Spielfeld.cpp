@@ -6,27 +6,24 @@
 #include <random>
 #include <chrono>  
 #include <thread>
+#include <memory>
 #include "Feld.cpp"
 
 
 class Spielfeld {
 private:
-    Feld** spielfeld;
+    std::vector<std::vector<std::unique_ptr<Feld>>> spielfeld;
     int size;
 
 public:
     Spielfeld(int size) : size(size) {
-        spielfeld = new Feld * [size];
+        spielfeld.resize(size);
         for (int i = 0; i < size; ++i) {
-            spielfeld[i] = new Feld[size];
+            spielfeld[i].resize(size);
+            for (int j = 0; j < size; ++j) {
+                spielfeld[i][j] = std::make_unique<Feld>();
+            }
         }
-    }
-
-    ~Spielfeld() {
-        for (int i = 0; i < size; ++i) {
-            delete[] spielfeld[i];
-        }
-        delete[] spielfeld;
     }
 
     std::string getAnsiCode(Farbe farbe) const {
@@ -64,7 +61,7 @@ public:
             }
 
             for (int j = 0; j < size; ++j) {
-                const Feld& feld = spielfeld[i][j];
+                const Feld& feld = *spielfeld[i][j];
 
                 if (feld.getAnzahl() == 0) {
                     // Wenn das Feld leer ist, weiße Null ausgeben
@@ -86,10 +83,10 @@ public:
     }
 
     Feld& getFeld(int x, int y) {
-        return spielfeld[x][y];
+        return *spielfeld[x][y];
     }
 
-    Feld** getSpielfeld() {
+    const std::vector<std::vector<std::unique_ptr<Feld>>>& getSpielfeld() const {
         return spielfeld;
     }
 
@@ -167,13 +164,13 @@ public:
         for (int x = 0; x < size; ++x) {
             for (int y = 0; y < size; ++y) {
                 Feld& feld = getFeld(x, y);
-                Spieler* owner = feld.getOwner();
+                std::shared_ptr<Spieler> owner = feld.getOwner();
 
                 // Felder ohne Besitzer ignorieren
                 if (owner == nullptr) continue;
 
                 // Score des Spielers um 1 erhöhen
-                scores[owner]++;
+                owner->setScore(owner->getScore() + 1);
             }
         }
 

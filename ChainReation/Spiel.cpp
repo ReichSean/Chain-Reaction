@@ -6,33 +6,34 @@
 #include <array>
 #include <chrono>  
 #include <thread>
+#include<memory>
 #include "Spielfeld.cpp"
 
 class Spiel {
 private:
-	std::vector<Spieler> spielerVector;
-	Spielfeld* spielfeld;
+	std::vector<std::shared_ptr<Spieler>> spielerVector;
+	std::unique_ptr<Spielfeld> spielfeld;
 
 public:
 	Spiel() : spielfeld(nullptr) {
 		spielInitialisieren();
 	}
 
-	Spiel(Spielfeld* spielfeld) : spielfeld(spielfeld) {}
+	Spiel(std::unique_ptr<Spielfeld> sf) : spielfeld(std::move(sf)) {}
 	
 
-	void hinzufügenSpieler(const Spieler& spieler) { spielerVector.push_back(spieler); }
-	const Spieler getSpieler(int x) const { return spielerVector[x]; }
+	void hinzufügenSpieler(const std::shared_ptr<Spieler>& spieler) { spielerVector.push_back(spieler);	}
+	std::shared_ptr<Spieler> getSpieler(int x) const { return spielerVector[x]; }
 
 	Spielfeld& getSpielfeld() { return *spielfeld; }
-	void setSpielfeld(Spielfeld* sf) { spielfeld = sf; }
+	void setSpielfeld(std::unique_ptr<Spielfeld> sf) { spielfeld = std::move(sf); }
 
 	bool stringToBool(const std::string& s) const {
 		return (s == "true");
 	}
 
 
-	std::vector<Spieler> getSpielerVector(){
+	std::vector<std::shared_ptr<Spieler>> getSpielerVector(){
 		return spielerVector;
 	};
 
@@ -65,11 +66,11 @@ public:
 	void spielSpeichern() {
 		std::ofstream spielstand("spielstand.txt");
 		if (spielstand.is_open()) {
-			for (const Spieler& spieler : spielerVector) {
-				spielstand << "Spieler: " << spieler.getId() << "," << spieler.getName() << "," << spieler.getIsAI() << ",";
-				spielstand << enumToString(spieler.getFarbe()) << "," << spieler.getScore() << std::endl; //hier Frage ob Score speichern oder sp�ter einfach berechnen aus den feldern? + Frage wegen Enum Farbe obs so passt
+			for (const auto& spieler : spielerVector) {
+				spielstand << "Spieler: " << spieler->getId() << "," << spieler->getName() << "," << spieler->getIsAI() << ",";
+				spielstand << enumToString(spieler->getFarbe()) << "," << spieler->getScore() << std::endl; //hier Frage ob Score speichern oder sp�ter einfach berechnen aus den feldern? + Frage wegen Enum Farbe obs so passt
 			}
-			spielstand << "Feldgroe�e: " << getSpielfeld().getSize() << std::endl;
+			spielstand << "Feldgroesse: " << getSpielfeld().getSize() << std::endl;
 			for (int i = 0; i < getSpielfeld().getSize(); i++) {
 				for (int j = 0; j < getSpielfeld().getSize(); j++) {
 					if (getSpielfeld().getFeld(i, j).getOwner() == nullptr) {
@@ -87,16 +88,16 @@ public:
 			std::cout << "Daten wurden in 'spielstand.txt' gespeichert!" << std::endl;
 		}
 		else {
-			std::cerr << "Fehler beim öffnen der Datei!" << std::endl;
+			std::cerr << "Fehler beim oeffnen der Datei!" << std::endl;
 		}
 	}
 
-	Spiel spielLaden() {
+	void spielLaden() {
 		std::ifstream fReader("spielstand.txt");
 		std::string line;
 		if (!fReader.is_open()) {
 			std::cout << "Datei konnte nicht geoeffnet werden!" << std::endl;
-
+			return;
 		}
 		if (fReader.is_open()) {
 			while (std::getline(fReader, line)) {
@@ -130,7 +131,7 @@ public:
 						score = std::stoi(entry);
 						std::cout << "gelesener Player score: " << score << std::endl;
 					}
-					hinzufügenSpieler(Spieler(farbe, name, isAI, spielerId));
+					hinzufügenSpieler(std::make_shared<Spieler>(farbe, name, isAI, spielerId));
 				}
 				else if (line.find("Feldgroesse: ") == 0) {
 					std::istringstream specStream(line.substr(12));
@@ -139,7 +140,7 @@ public:
 						zeilen = std::stoi(entry);
 						std::cout << "gelesene SpielfeldZeilen: " << zeilen << std::endl;
 					}
-					setSpielfeld(new Spielfeld(zeilen));
+					setSpielfeld(std::make_unique<Spielfeld>(zeilen));
 				}
 				else if (line.find("Feld: ") == 0) {
 					std::istringstream specStream(line.substr(6));
@@ -166,10 +167,10 @@ public:
 							getSpielfeld().getFeld(zeile, spalte).setOwner(nullptr);
 						}
 						else {
-							for (Spieler& possibleOwner : spielerVector) {
-								if (possibleOwner.getId() == ownerId) {
+							for (auto& possibleOwner : spielerVector) {
+								if (possibleOwner->getId() == ownerId) {
 									getSpielfeld().getFeld(zeile, spalte).setAnzahl(anzahlPunkte);
-									getSpielfeld().getFeld(zeile, spalte).setOwner(&possibleOwner);
+									getSpielfeld().getFeld(zeile, spalte).setOwner(possibleOwner);
 									std::cout << "eingetragene Owner id: " << getSpielfeld().getFeld(zeile, spalte).getOwner()->getId() << std::endl;
 								}
 							}
@@ -181,7 +182,7 @@ public:
 		}
 		fReader.close();
 		std::cout << "Spielstand erfolgreich geladen!" << std::endl;
-		return *this;
+		return;
 	}
 
 	void spielInitialisieren() {
@@ -192,10 +193,10 @@ public:
 		// TO DO: checken dass Angabe zwischen 0 und 4 liegt
 		std::cin >> anzahlSpieler;
 		if(anzahlSpieler <= 2){
-			setSpielfeld(new Spielfeld(5));
+			setSpielfeld(std::make_unique<Spielfeld>(5));
 		}
 		else {
-			setSpielfeld(new Spielfeld(10));
+			setSpielfeld(std::make_unique<Spielfeld>(10));
 		}
 		for (int i = 0; i < anzahlSpieler; i++) {
 			std::string spielerName;
@@ -231,7 +232,7 @@ public:
 				}
 				std::cin >> spielerFarbe;
 			}
-			hinzufügenSpieler(Spieler(stringToEnum(spielerFarbe), spielerName, false));
+			hinzufügenSpieler(std::make_shared<Spieler>(stringToEnum(spielerFarbe), spielerName, false));
 		}
 		// Optionalen KI Gegner hinzufügen? 
 		char KI;
@@ -247,7 +248,7 @@ public:
 				gültigeEingabe = true;
 				if (KI == 'Y') {
 					// KI Spieler erstellen mit IsAI = true und Name "Computer"
-					hinzufügenSpieler(Spieler(stringToEnum("Rot"), "Computer", true));
+					hinzufügenSpieler(std::make_shared<Spieler>(stringToEnum("Rot"), "Computer", true));
 				}
 				else {
 					std::cout << "Es wurde keine KI erstellt" << std::endl;
@@ -324,11 +325,11 @@ public:
 	
 	void spielen() {
 		
-		for (Spieler& spieler : spielerVector) {
+		for (auto& spieler : spielerVector) {
 			ersterZug(spieler);
 		}
 		while (!finished()) {
-			for (Spieler& spieler : spielerVector) {
+			for (auto& spieler : spielerVector) {
 				if (!finished()) {
                 zug(spieler);
 				} else {
@@ -340,12 +341,12 @@ public:
 	}
 	// Zugmethoden für Spieler und KI
 
-	void zug(Spieler& spieler) {
+	void zug(std::shared_ptr<Spieler>& spieler) {
 	if(besitztSpielerFelder(spieler)){
-		if (!spieler.getIsAI()) { // Zug für Nicht-KI Spieler, wenn KI-Spieler, dann KIZug(spieler), also else-Anweisung
-		std::cout << spieler.getName() << ", bitte waehle ein Feld" << std::endl; //abfrage ob Spiel beenden und speichern
+		if (!spieler->getIsAI()) { // Zug für Nicht-KI Spieler, wenn KI-Spieler, dann KIZug(spieler), also else-Anweisung
+		std::cout << spieler->getName() << ", bitte waehle ein Feld" << std::endl; //abfrage ob Spiel beenden und speichern
 		std::array<int, 2> koordinaten = getInput();
-			if (getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).getOwner() == &spieler) {
+			if (getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).getOwner() == spieler) {
 				getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).hinzufuegen();
 				getSpielfeld().splash();
 			}
@@ -359,15 +360,15 @@ public:
 		}
 	}
 	else {
-		std::cout << spieler.getName() << " besitzt keine Felder mehr." << std::endl;
+		std::cout << spieler->getName() << " besitzt keine Felder mehr." << std::endl;
 	}
 	}
 
-	void KIZug(Spieler& spieler) {	
+	void KIZug(std::shared_ptr<Spieler>& spieler) {
 		if(besitztSpielerFelder(spieler)){
         std::vector<Feld*> felderDesSpielers = besetzteFelder(spieler);
 			
-			std::cout << spieler.getName() << " waehlt ein Feld..." << std::endl;
+			std::cout << spieler->getName() << " waehlt ein Feld..." << std::endl;
 			std::this_thread::sleep_for(std::chrono::milliseconds(1400));
 			
             // Erhöhe das erste Feld, das der Spieler besitzt
@@ -377,18 +378,18 @@ public:
 			
 		}
 		else {
-		std::cout << spieler.getName() << " besitzt keine Felder mehr." << std::endl;
+		std::cout << spieler->getName() << " besitzt keine Felder mehr." << std::endl;
 		}
     }
 
 	// Erste Zugmethoden für Spieler und KI 
 
-	void ersterZug(Spieler& spieler) {
-		if (!spieler.getIsAI()) { // Erster Zug Methode für nicht KI Spieler, wenn KI ,dann else Anweisung
-		std::cout << spieler.getName() << ", bitte waehle ein Startfeld" << std::endl;
+	void ersterZug(std::shared_ptr<Spieler>& spieler) {
+		if (!spieler->getIsAI()) { // Erster Zug Methode für nicht KI Spieler, wenn KI ,dann else Anweisung
+		std::cout << spieler->getName() << ", bitte waehle ein Startfeld" << std::endl;
 		std::array<int, 2> koordinaten = getInput();
 		if (getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).getAnzahl() == 0) {
-			getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).setOwner(&spieler);
+			getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).setOwner(spieler);
 			getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).setAnzahl(3);
 			getSpielfeld().splash();
 		}
@@ -402,10 +403,10 @@ public:
 		}
 	}
 
-	void ersterKIZug(Spieler& spieler) {
+	void ersterKIZug(std::shared_ptr<Spieler>& spieler) {
             // Wenn KI kein Feld hat, alle FREIEN Felder in freieFelder speichern
             std::vector<Feld*> freieFelder;
-			std::cout << spieler.getName() << " waehlt ein Startfeld..." << std::endl;
+			std::cout << spieler->getName() << " waehlt ein Startfeld..." << std::endl;
 			std::this_thread::sleep_for(std::chrono::milliseconds(1400));
 
             for (int i = 0; i < spielfeld->getSize(); i++) {
@@ -423,7 +424,7 @@ public:
                 std::uniform_int_distribution<> dis(0, freieFelder.size() - 1);
                 int index = dis(gen);
                 Feld* feld = freieFelder[index];
-                feld->setOwner(&spieler);
+                feld->setOwner(spieler);
                 feld->setAnzahl(3);  // Erhöhe die Anzahl auf dem Feld
                 feld->setAnzahl(3);  // Erhöhe die Anzahl auf dem Feld
                 spielfeld->splash();  // Zeige das Spielfeld an
@@ -432,12 +433,12 @@ public:
 
 	// Rückgabe von allen Feldern, die dem Spieler gehören
 
-	std::vector<Feld*> besetzteFelder(const Spieler& spieler) {
+	std::vector<Feld*> besetzteFelder(const std::shared_ptr<Spieler>& spieler) {
         std::vector<Feld*> felderDesSpielers;
         for (int i = 0; i < spielfeld->getSize(); i++) {
             for (int j = 0; j < spielfeld->getSize(); j++) {
                 Feld& feld = spielfeld->getFeld(i, j);
-                if (feld.getOwner() != nullptr && feld.getOwner()->getId() == spieler.getId()) {
+                if (feld.getOwner() != nullptr && feld.getOwner()->getId() == spieler->getId()) {
                     felderDesSpielers.push_back(&feld);
                 }
             }
@@ -447,14 +448,14 @@ public:
 
 	// Prüfen ob ein Spieler Felder besitzt
 
-	bool besitztSpielerFelder(const Spieler& spieler) {
+	bool besitztSpielerFelder(const std::shared_ptr<Spieler>& spieler) {
         std::vector<Feld*> felderDesSpielers = besetzteFelder(spieler);
         return !felderDesSpielers.empty();  // Gibt true zurück, wenn der Vektor nicht leer ist
     }
 
 	bool finished() {
 		int spielerMitFeldern = 0;
-		for (const Spieler& spieler : spielerVector) {
+		for (const auto& spieler : spielerVector) {
 			if (besitztSpielerFelder(spieler)) {
 				spielerMitFeldern++;
 			}
@@ -464,7 +465,7 @@ public:
 
 	bool istFarbeVerfuegbar(const Farbe& farbe) {
     for (const auto& spieler : spielerVector) {
-        if (spieler.getFarbe() == farbe) {
+        if (spieler->getFarbe() == farbe) {
             return false;  // Farbe ist bereits vergeben
         }
     }
