@@ -11,8 +11,6 @@ int main()
     
     // TO DO: Pointer mit Smartpointer ersetzten und Klassen/ Methoden schön anordnen, Dateinamen bearbeiten
     Spiel game = Spiel();
-
-    game.getSpielfeld().printSpielfeld();
     game.spielen();
 
     return 0;
