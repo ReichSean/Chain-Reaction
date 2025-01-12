@@ -16,7 +16,6 @@ private:
 
 public:
 	Spiel() : spielfeld(nullptr) {
-		spielInitialisieren();
 	}
 
 	Spiel(std::unique_ptr<Spielfeld> sf) : spielfeld(std::move(sf)) {}
