@@ -13,6 +13,7 @@ class Spiel {
 private:
 	std::vector<std::shared_ptr<Spieler>> spielerVector;
 	std::unique_ptr<Spielfeld> spielfeld;
+	bool istGeladen;
 
 public:
 	Spiel() : spielfeld(nullptr) {
@@ -20,6 +21,7 @@ public:
 
 	Spiel(std::unique_ptr<Spielfeld> sf) : spielfeld(std::move(sf)) {}
 	
+	Spiel& getSpiel(){	return *this;	}
 
 	void hinzufügenSpieler(const std::shared_ptr<Spieler>& spieler) { spielerVector.push_back(spieler);	}
 	std::shared_ptr<Spieler> getSpieler(int x) const { return spielerVector[x]; }
@@ -27,10 +29,10 @@ public:
 	Spielfeld& getSpielfeld() { return *spielfeld; }
 	void setSpielfeld(std::unique_ptr<Spielfeld> sf) { spielfeld = std::move(sf); }
 
-	bool stringToBool(const std::string& s) const {
-		return (s == "true");
-	}
 
+	bool stringToBool(const std::string& s) const {
+		return (s == "true" || s == "1");
+	}
 
 	std::vector<std::shared_ptr<Spieler>> getSpielerVector(){
 		return spielerVector;
@@ -181,10 +183,12 @@ public:
 		}
 		fReader.close();
 		std::cout << "Spielstand erfolgreich geladen!" << std::endl;
+		istGeladen = true;
 		return;
 	}
 
 	void spielInitialisieren() {
+		spielerVector.clear(); // Entfernt alle Spieler falls neue Spiel erstellt wird
 		
 		bool gültigeAnzahlSpielerEingabe = false;
 		int anzahlSpieler;
@@ -206,9 +210,13 @@ public:
 		}
 		
 		if(anzahlSpieler <= 2){
+			spielfeld.reset(new Spielfeld(5)); // Erstellt ein neues Spielfeld mit 10x10 Feldern
+
 			setSpielfeld(std::make_unique<Spielfeld>(5));
 		}
 		else {
+			spielfeld.reset(new Spielfeld(7)); // Erstellt ein neues Spielfeld mit 10x10 Feldern
+
 			setSpielfeld(std::make_unique<Spielfeld>(7));
 		}
 		for (int i = 0; i < anzahlSpieler; i++) {
@@ -280,7 +288,7 @@ public:
 				}
 			}
 		}
-
+		istGeladen = false; 
 	}
 
 	static int letterToNumber(char letter) {
@@ -324,6 +332,7 @@ public:
 	}
 
 	std::array<int, 2> getInput() {
+
 		while (true) {
 			std::string input;
 			std::cin >> input;
@@ -333,20 +342,65 @@ public:
 				koordinaten[1] = letterToNumber(input[0]);
 				return koordinaten;
 			}
+			if (input[0]=='q' || input[0]=='Q') {
+				pause(getSpiel());
+			}
 			else {
 				std::cout << "Eingabe muss validen Buchstaben und Zahlen innerhalb der Spielgrenzen haben!" << std::endl;
 			}
 		}
 	}
 	
+	void pause(Spiel& game) {
+    char auswahl;
+    bool imMenue = true;
+    while (imMenue) {
+        std::cout << "Pausemenü:\n";
+        std::cout << "P - Spiel speichern und fortsetzen\n";
+        std::cout << "N - Neues Spiel starten\n";
+        std::cout << "Q - Spiel beenden\n";
+        std::cout << "Wähle eine Option (P/N/Q): ";
+        std::cin >> auswahl;
+        switch (auswahl) {
+            case 'P':
+            case 'p':
+                game.spielSpeichern();
+                std::cout << "Spiel gespeichert. Drücke eine Taste, um fortzufahren.\n";
+                imMenue = false;
+                break;
+            case 'N':
+            case 'n':
+                std::cout << "Neues Spiel wird gestartet...\n";
+                game.spielInitialisieren();
+				game.spielen();
+                imMenue = false;
+                break;
+            case 'Q':
+            case 'q':
+                std::cout << "Spiel wird beendet.\n";
+                exit(0);
+            default:
+                std::cout << "Ungültige Eingabe! Bitte wähle P, N oder Q.\n";
+                break;
+			}
+		}
+	}
+
+
 	void spielen() {
 		getSpielfeld().printSpielfeld();
 		std::shared_ptr<Spieler> possibleWinner;
+
+		if(!istSpielGeladen()) {
+		// Züge am Anfang
 		for (auto& spieler : spielerVector) {
 			ersterZug(spieler);
 		}
+		}
+		// Normale Züge
 		bool running = true; // maybe noch anders lösen
 		while (running) {
+
 			for (auto& spieler : spielerVector) {
 				if (!finished()) {
 					possibleWinner = spieler;
@@ -357,6 +411,7 @@ public:
 					if (possibleWinner != nullptr) {
 						std::cout << "Herzlichen Glueckwunsch, " << possibleWinner->getName() << "! Sie haben gewonnen!" << std::endl;
 					}
+					exit(0);
 					return;
             		}
 			}
@@ -368,6 +423,7 @@ public:
 	if(besitztSpielerFelder(spieler)){
 		if (!spieler->getIsAI()) { // Zug für Nicht-KI Spieler, wenn KI-Spieler, dann KIZug(spieler), also else-Anweisung
 		std::cout << spieler->getName() << ", bitte waehle ein Feld" << std::endl; //abfrage ob Spiel beenden und speichern
+
 		std::array<int, 2> koordinaten = getInput();
 			if (getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).getOwner() == spieler) {
 				getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).hinzufuegen();
@@ -495,5 +551,9 @@ public:
     }
     return true;  // Farbe ist verfügbar
 	}	
+
+	bool istSpielGeladen() const {
+        return istGeladen;
+    }
 
 };
