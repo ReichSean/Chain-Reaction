@@ -46,6 +46,11 @@ public:
         #else
             system("clear");  // Linux/Mac
         #endif
+
+
+        std::cout << "Q - Pausenmenue" << std::endl;
+        std::cout << std::endl;
+          
         std::cout << getAnsiCode(Farbe::Blau) << "   "; 
         for (int j = 0; j < size; ++j) {
             char columnLabel = 'A' + j; 
@@ -118,35 +123,7 @@ public:
             explosion(pos.first, pos.second);
         }
 
-     
-        int aktiveSpieler = 0;
-        std::shared_ptr<Spieler> ersterSpieler = nullptr;
-
-        for (int x = 0; x < size; ++x) {
-            for (int y = 0; y < size; ++y) {
-                Feld& feld = getFeld(x, y);
-                if (feld.getOwner() != nullptr) {
-                    if (ersterSpieler == nullptr) {
-                        ersterSpieler = feld.getOwner();
-                        aktiveSpieler = 1;
-                    }
-                    else if (feld.getOwner() != ersterSpieler) {
-                        aktiveSpieler = 2;
-                        break;
-                    }
-                }
-            }
-            if (aktiveSpieler == 2) {
-                break;
-            }
-        }
-
-        if (aktiveSpieler <= 1) {
-            printSpielfeld();
-        }
-
-        //Falls es nur noch einen Spieler gibt soll Splash nicht nochmal aufgerufen werden
-        if (explosionOccurred && aktiveSpieler > 1) {
+        if (explosionOccurred) {
             splash();
         }
 
@@ -155,14 +132,13 @@ public:
     void explosion(int x, int y) {
         Feld& feld = getFeld(x, y);
 
+       
+
         if (feld.getAnzahl() <= 3) {
             return;
         }
 
-        int überschüssigeKugeln = feld.getAnzahl() - 3;
-
         feld.setAnzahl(0);
-
 
         int benachbarteFelder[4][2] = {
             {x - 1, y},
@@ -177,7 +153,7 @@ public:
 
             if (nx >= 0 && nx < size && ny >= 0 && ny < size) {
                 Feld& benachbartesFeld = getFeld(nx, ny);
-                benachbartesFeld.setAnzahl(benachbartesFeld.getAnzahl()+überschüssigeKugeln);
+                benachbartesFeld.hinzufuegen();
                 benachbartesFeld.setOwner(feld.getOwner());
             }
         }
@@ -202,6 +178,8 @@ public:
                 scores[owner]++;
             }
         }
+
+        std::cout << std::endl; //Abstand zwischen Spielfeld und Score
 
         // Scores ausgeben
         for (const auto& entry : scores) {

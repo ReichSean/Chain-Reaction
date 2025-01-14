@@ -64,6 +64,17 @@ public:
 		else { return Farbe::Weiss; }
 	}
 
+	const Farbe numberToEnum(int number) const {
+		switch (number) {
+		case 1: return Farbe::Gruen;
+		case 2: return Farbe::Blau;
+		case 3: return Farbe::Gelb;
+		case 4: return Farbe::Magenta;
+		case 5: return Farbe::Cyan;
+		default: return Farbe::Weiss;  // Standardwert für ungültige Eingaben
+		}
+	}
+
 	void spielSpeichern() {
 		std::ofstream spielstand("spielstand.txt");
 		if (spielstand.is_open()) {
@@ -210,13 +221,11 @@ public:
 		}
 		
 		if(anzahlSpieler <= 2){
-			spielfeld.reset(new Spielfeld(5)); // Erstellt ein neues Spielfeld mit 10x10 Feldern
-
+			spielfeld.reset(new Spielfeld(5)); 
 			setSpielfeld(std::make_unique<Spielfeld>(5));
 		}
 		else {
-			spielfeld.reset(new Spielfeld(7)); // Erstellt ein neues Spielfeld mit 10x10 Feldern
-
+			spielfeld.reset(new Spielfeld(7)); 
 			setSpielfeld(std::make_unique<Spielfeld>(7));
 		}
 		for (int i = 0; i < anzahlSpieler; i++) {
@@ -237,23 +246,31 @@ public:
 
 			// Rot als Farbe für normale Spieler ausgeschlossen, da KI = Rot
 			
-			std::cout << "Bitte geben Sie eine Farbe an (Gruen|Blau|Gelb|Magenta|Cyan):" << std::endl;
-			std::cin >> spielerFarbe;
-			while (spielerFarbe == "Rot" || stringToEnum(spielerFarbe) == Farbe::Weiss || stringToEnum(spielerFarbe) == Farbe::Reset
-			 || !istFarbeVerfuegbar(stringToEnum(spielerFarbe))) {
+			std::cout << "Bitte waehlen Sie eine Farbe:\n";
+			std::cout << "1 - Gruen\n2 - Blau\n3 - Gelb\n4 - Magenta\n5 - Cyan\n";
+			int farbenWahl;
+			std::cin >> farbenWahl;
 
-				if (spielerFarbe == "Rot") {
-					std::cout << "Bitte geben Sie eine Farbe ausser 'Rot' an:" << std::endl;
-				}
-				if (istFarbeVerfuegbar(stringToEnum(spielerFarbe)) == false) {
-					std::cout << "Farbe bereits vergeben, bitte waehlen Sie eine andere Farbe" << std::endl;
+			while (true) {
+				std::cin >> farbenWahl;
+
+				// Überprüfen, ob die Eingabe gültig ist
+				if (std::cin.fail() || farbenWahl < 1 || farbenWahl > 5 || !istFarbeVerfuegbar(numberToEnum(farbenWahl))) {
+					// Fehlerzustand und Puffer zurücksetzen
+					std::cin.clear();
+					std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+					std::cout << "Ungueltige Wahl oder Farbe bereits vergeben. Bitte erneut waehlen:\n";
 				}
 				else {
-					std::cout << "Bitte geben Sie eine gueltige Farbe an:" << std::endl;
+					// Gültige Eingabe
+					break;
 				}
-				std::cin >> spielerFarbe;
 			}
-			hinzufügenSpieler(std::make_shared<Spieler>(stringToEnum(spielerFarbe), spielerName, false));
+
+			Farbe ausgewaehlteFarbe = numberToEnum(farbenWahl);
+
+			hinzufügenSpieler(std::make_shared<Spieler>(ausgewaehlteFarbe, spielerName, false));
 		}
 
 		char KI;
@@ -261,7 +278,7 @@ public:
 
 		if (anzahlSpieler == 1) {
 			// Wenn nur 1 Spieler, wird der KI-Spieler automatisch hinzugefügt
-			std::cout << "Da nur 1 Spieler mitmacht, wird automatisch ein KI-Spieler hinzugefügt." << std::endl;
+			std::cout << "Da nur 1 Spieler mitmacht, wird automatisch ein KI-Spieler hinzugefuegt." << std::endl;
 			hinzufügenSpieler(std::make_shared<Spieler>(stringToEnum("Rot"), "Computer", true));
 			std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 		}
@@ -355,32 +372,32 @@ public:
     char auswahl;
     bool imMenue = true;
     while (imMenue) {
-        std::cout << "Pausemenü:\n";
-        std::cout << "P - Spiel speichern und fortsetzen\n";
-        std::cout << "N - Neues Spiel starten\n";
-        std::cout << "Q - Spiel beenden\n";
-        std::cout << "Wähle eine Option (P/N/Q): ";
+        std::cout << "Pausemenue:" << std::endl;
+        std::cout << "P - Spiel speichern und fortsetzen" << std::endl;
+        std::cout << "N - Neues Spiel starten" << std::endl;
+        std::cout << "Q - Spiel beenden" << std::endl;
+        std::cout << "Waehle eine Option (P/N/Q):" << std::endl;
         std::cin >> auswahl;
         switch (auswahl) {
             case 'P':
             case 'p':
                 game.spielSpeichern();
-                std::cout << "Spiel gespeichert. Drücke eine Taste, um fortzufahren.\n";
+                std::cout << "Spiel gespeichert" << std::endl;
                 imMenue = false;
                 break;
             case 'N':
             case 'n':
-                std::cout << "Neues Spiel wird gestartet...\n";
+                std::cout << "Neues Spiel wird gestartet..." << std::endl;
                 game.spielInitialisieren();
 				game.spielen();
                 imMenue = false;
                 break;
             case 'Q':
             case 'q':
-                std::cout << "Spiel wird beendet.\n";
+                std::cout << "Spiel wird beendet." << std::endl;
                 exit(0);
             default:
-                std::cout << "Ungültige Eingabe! Bitte wähle P, N oder Q.\n";
+                std::cout << "Ungültige Eingabe! Bitte wähle P, N oder Q." << std::endl;
                 break;
 			}
 		}
@@ -420,65 +437,67 @@ public:
 	// Zugmethoden für Spieler und KI
 
 	void zug(std::shared_ptr<Spieler>& spieler) {
-	if(besitztSpielerFelder(spieler)){
-		if (!spieler->getIsAI()) { // Zug für Nicht-KI Spieler, wenn KI-Spieler, dann KIZug(spieler), also else-Anweisung
-		std::cout << spieler->getName() << ", bitte waehle ein Feld" << std::endl; //abfrage ob Spiel beenden und speichern
+		if (besitztSpielerFelder(spieler)) {
+			if (!spieler->getIsAI()) { // Zug für Nicht-KI Spieler, wenn KI-Spieler, dann KIZug(spieler), also else-Anweisung
+				std::cout << std::endl;
+				std::cout << spieler->getName() << ", bitte waehle ein Feld" << std::endl; //abfrage ob Spiel beenden und speichern
 
-		std::array<int, 2> koordinaten = getInput();
-			if (getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).getOwner() == spieler) {
-				getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).hinzufuegen();
-				getSpielfeld().splash();
+				std::array<int, 2> koordinaten = getInput();
+				if (getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).getOwner() == spieler) {
+					getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).hinzufuegen();
+					getSpielfeld().splash();
+				}
+				else {
+					std::cout << "Waehle ein Feld, welches dir gehoert!" << std::endl;
+					zug(spieler);
+				}
 			}
 			else {
-				std::cout << "Waehle ein Feld, welches dir gehoert!" << std::endl;
-				zug(spieler);
+				KIZug(spieler);
 			}
-		} 
-		else {
-			KIZug(spieler);
 		}
-	}
-	else {
-		std::cout << spieler->getName() << " besitzt keine Felder mehr." << std::endl;
-	}
+		else {
+			std::cout << spieler->getName() << " besitzt keine Felder mehr." << std::endl;
+		}
 	}
 
 	void KIZug(std::shared_ptr<Spieler>& spieler) {
-		if(besitztSpielerFelder(spieler)){
-        std::vector<Feld*> felderDesSpielers = besetzteFelder(spieler);
-			
+		if (besitztSpielerFelder(spieler)) {
+			std::vector<Feld*> felderDesSpielers = besetzteFelder(spieler);
+			std::cout << std::endl;
 			std::cout << spieler->getName() << " waehlt ein Feld..." << std::endl;
 			std::this_thread::sleep_for(std::chrono::milliseconds(1400));
-			
-            // Erhöhe das erste Feld, das der Spieler besitzt
-            Feld* feld = felderDesSpielers[0];
-            feld->hinzufuegen();
+
+			// Erhöhe das erste Feld, das der Spieler besitzt
+			Feld* feld = felderDesSpielers[0];
+			feld->hinzufuegen();
 			spielfeld->splash();
-			
+
 		}
 		else {
-		std::cout << spieler->getName() << " besitzt keine Felder mehr." << std::endl;
+			std::cout << spieler->getName() << " besitzt keine Felder mehr." << std::endl;
 		}
-    }
+	}
 
 	// Erste Zugmethoden für Spieler und KI 
 
 	void ersterZug(std::shared_ptr<Spieler>& spieler) {
-		getSpielfeld().printSpielfeld();
 		if (!spieler->getIsAI()) { // Erster Zug Methode für nicht KI Spieler, wenn KI ,dann else Anweisung
-		std::cout << spieler->getName() << ", bitte waehle ein Startfeld" << std::endl;
-		std::array<int, 2> koordinaten = getInput();
-		if (getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).getAnzahl() == 0) {
-			getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).setOwner(spieler);
-			getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).setAnzahl(3);
-			getSpielfeld().splash();
+			std::cout << std::endl;
+			std::cout << spieler->getName() << ", bitte waehle ein Startfeld" << std::endl;
+			std::array<int, 2> koordinaten = getInput();
+			if (getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).getAnzahl() == 0) {
+				getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).setOwner(spieler);
+				getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).setAnzahl(3);
+				spielfeld->splash();
+			}
+			else {
+				std::cout << "Waehle ein Feld, dass niemandem gehoert!" << std::endl;
+				ersterZug(spieler);
+			}
+
 		}
 		else {
-			std::cout << "Waehle ein Feld, dass niemandem gehoert!" << std::endl;
-			ersterZug(spieler);
-		}
-
-	}	else {
 			ersterKIZug(spieler);
 		}
 	}
@@ -486,6 +505,7 @@ public:
 	void ersterKIZug(std::shared_ptr<Spieler>& spieler) {
             // Wenn KI kein Feld hat, alle FREIEN Felder in freieFelder speichern
             std::vector<Feld*> freieFelder;
+			std::cout << std::endl;
 			std::cout << spieler->getName() << " waehlt ein Startfeld..." << std::endl;
 			std::this_thread::sleep_for(std::chrono::milliseconds(1400));
 

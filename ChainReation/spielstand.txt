@@ -1,5 +1,5 @@
-Spieler: 1,Sean,0,Gelb,0
-Spieler: 2,Jon,0,Blau,0
+Spieler: 1,Jonas,0,Blau,0
+Spieler: 2,Jonathan,0,Magenta,0
 Feldgroesse: 5
 Feld: 0,0,0,-1
 Feld: 0,1,0,-1
