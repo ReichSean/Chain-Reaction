@@ -431,7 +431,7 @@ public:
 
 
 	void spielen() {
-		getSpielfeld().printSpielfeld();
+		getSpielfeld().splash();
 		std::shared_ptr<Spieler> possibleWinner;
 
 		if(!istSpielGeladen()) {
