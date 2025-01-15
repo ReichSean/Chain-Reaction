@@ -41,35 +41,35 @@ public:
     }
 
     void printSpielfeld() const {
-        #ifdef _WIN32
-            system("cls");  // Windows
-        #else
-            system("clear");  // Linux/Mac
-        #endif
+
+#ifdef _WIN32
+        system("cls");  // Windows
+#else
+        system("clear");  // Linux/Mac
+#endif
 
 
-        std::cout << "Q - Pausenmenue" << std::endl;
-        std::cout << std::endl;
-          
-        std::cout << getAnsiCode(Farbe::Blau) << "   "; 
+
+
+        std::cout << getAnsiCode(Farbe::Blau) << "   ";
         for (int j = 0; j < size; ++j) {
-            char columnLabel = 'A' + j; 
+            char columnLabel = 'A' + j;
             std::cout << getAnsiCode(Farbe::Blau) << columnLabel << " " << getAnsiCode(Farbe::Reset);
         }
         std::cout << std::endl;
 
         for (int i = 0; i < size; ++i) {
-            std::cout << getAnsiCode(Farbe::Blau) << (i + 1) << " "; 
+            std::cout << getAnsiCode(Farbe::Blau) << (i + 1) << " ";
 
             if (i + 1 < 10) {
-                std::cout << " "; //Platz, weil 10 länger als 1-9
+                std::cout << " "; //Platz, weil 10 l�nger als 1-9
             }
 
             for (int j = 0; j < size; ++j) {
                 const Feld& feld = *spielfeld[i][j];
 
                 if (feld.getAnzahl() == 0) {
-                    // Wenn das Feld leer ist, weiße Null ausgeben
+                    // Wenn das Feld leer ist, wei�e Null ausgeben
                     std::cout << getAnsiCode(Farbe::Weiss) << "0" << getAnsiCode(Farbe::Reset) << " ";
                 }
                 else {
@@ -78,7 +78,7 @@ public:
                         std::cout << getAnsiCode(feld.getOwner()->getFarbe()) << feld.getAnzahl() << getAnsiCode(Farbe::Reset) << " ";
                     }
                     else {
-                        // Falls kein Besitzer, aber Anzahl > 0, trotzdem Weiß verwenden
+                        // Falls kein Besitzer, aber Anzahl > 0, trotzdem Wei� verwenden
                         std::cout << getAnsiCode(Farbe::Weiss) << feld.getAnzahl() << getAnsiCode(Farbe::Reset) << " ";
                     }
                 }
@@ -104,7 +104,7 @@ public:
 
         printSpielfeld();
         score();
-       
+
 
         std::this_thread::sleep_for(std::chrono::milliseconds(800));
 
@@ -132,7 +132,7 @@ public:
     void explosion(int x, int y) {
         Feld& feld = getFeld(x, y);
 
-       
+
 
         if (feld.getAnzahl() <= 3) {
             return;
@@ -174,19 +174,26 @@ public:
                 // Felder ohne Besitzer ignorieren
                 if (owner == nullptr) continue;
 
-                // Score des Spielers um 1 erhöhen
+                // Score des Spielers um 1 erh�hen
                 scores[owner]++;
             }
         }
 
         std::cout << std::endl; //Abstand zwischen Spielfeld und Score
+        if (!scores.empty()) {
+            std::cout << "Score:" << std::endl;
+        }
 
-        // Scores ausgeben
-        for (const auto& entry : scores) {
+        std::vector<std::pair<std::shared_ptr<Spieler>, int>> sortedScores(scores.begin(), scores.end());
+
+        std::sort(sortedScores.begin(), sortedScores.end(), [](const auto& a, const auto& b) {
+            return a.second > b.second;
+            });
+
+        for (const auto& entry : sortedScores) {
             std::shared_ptr<Spieler> player = entry.first;
             int score = entry.second;
 
-            // Ausgabe mit Spielerfarbe
             std::cout << getAnsiCode(player->getFarbe())
                 << player->getName() << ": " << score
                 << getAnsiCode(Farbe::Reset) << std::endl;
