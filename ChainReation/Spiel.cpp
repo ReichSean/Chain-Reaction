@@ -89,6 +89,7 @@ public:
 	void spielSpeichern() {
 		std::ofstream spielstand("spielstand.txt");
 		if (spielstand.is_open()) {
+			//damit der aktuelle Spieler zuerst eingeschrieben wird
 			for (const auto& spieler : spielerVector) {
 				spielstand << "Spieler: " << spieler->getId() << "," << spieler->getName() << "," << spieler->getIsAI() << ",";
 				spielstand << enumToString(spieler->getFarbe()) << "," << spieler->getScore() << std::endl; //hier Frage ob Score speichern oder sp�ter einfach berechnen aus den feldern? + Frage wegen Enum Farbe obs so passt
@@ -107,6 +108,8 @@ public:
 
 				}
 			}
+			//Id des aktiven Spielers zum Zeitpunkt des speicherns speichern
+			spielstand << "aktuellerSpielerId: " << getAktuellerSpielerId() << ",";
 			spielstand.close();
 			std::cout << "Daten wurden in 'spielstand.txt' gespeichert!" << std::endl;
 		}
@@ -199,6 +202,12 @@ public:
 							}
 						}
 						std::cout << "gelesene Feld Owner ID: " << ownerId << std::endl;
+					}
+				}
+				else if (line.find("aktuellerSpielerId: ") == 0) {
+					std::istringstream specStream(line.substr(20));
+					if (std::getline(specStream, entry, ',')) {
+						setAktuellerSpielerId(std::stoi(entry));
 					}
 				}
 			}
@@ -334,7 +343,7 @@ public:
 		}
 
 		char KI;
-		bool gültigeKIEingabe = false;
+		bool gültigeKIEingabe = false; // maybe ändern und bei allen über so etwas abfragen (bsp gültige Eingabe)
 
 		if (anzahlSpieler == 1) {
 			// Wenn nur 1 Spieler, wird der KI-Spieler automatisch hinzugefügt
@@ -595,7 +604,7 @@ public:
 			if (!spieler->getIsAI()) { // Zug für Nicht-KI Spieler, wenn KI-Spieler, dann KIZug(spieler), also else-Anweisung
 				std::cout << getAnsiCode(spieler->getFarbe()) << spieler->getName() << getAnsiCode(Farbe::Reset) << ", bitte waehle ein Feld (z.B. a4, b6, c3 usw.)" << std::endl; //abfrage ob Spiel beenden und speichern
 
-				std::array<int, 2> koordinaten = getInput();
+				std::array<int, 2> koordinaten = getInput(true);
 				if (getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).getOwner() == spieler) {
 					getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).hinzufuegen();
 					getSpielfeld().splash();

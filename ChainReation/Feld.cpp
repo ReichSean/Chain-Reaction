@@ -27,4 +27,3 @@ public:
 
     std::shared_ptr<Spieler> getOwner() const { return owner; }
 };
-

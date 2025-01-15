@@ -1,4 +1,4 @@
-#include <string>
+ï»¿#include <string>
 #include "Farbe.cpp"
 
 
@@ -17,7 +17,7 @@ public:
     Spieler(Farbe farbe, const std::string& name, const bool isAI, int id) : Name(name), farbe(farbe), id(id), isAI(isAI), score(0) {}
 
     static int generiereNaechsteID() {
-        static int naechsteID = 1;  // Startet bei 1 und wird bei jedem Aufruf erhöht
+        static int naechsteID = 1;  // Startet bei 1 und wird bei jedem Aufruf erhï¿½ht
         return naechsteID++;
     }
 
