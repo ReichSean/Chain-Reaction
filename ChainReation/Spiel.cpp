@@ -13,7 +13,8 @@ class Spiel {
 private:
 	std::vector<std::shared_ptr<Spieler>> spielerVector;
 	std::unique_ptr<Spielfeld> spielfeld;
-	bool istGeladen;
+	int aktuellerSpielerId;
+	bool istGeladen; // maybe noch initialisieren in Konstruktoren
 
 public:
 	Spiel() : spielfeld(nullptr) {
@@ -28,6 +29,11 @@ public:
 
 	Spielfeld& getSpielfeld() { return *spielfeld; }
 	void setSpielfeld(std::unique_ptr<Spielfeld> sf) { spielfeld = std::move(sf); }
+
+	void setAktuellerSpielerId(int spielerId) {
+		aktuellerSpielerId = spielerId;
+	}
+	int getAktuellerSpielerId() const { return aktuellerSpielerId; }
 
 
 	bool stringToBool(const std::string& s) const {
@@ -78,6 +84,7 @@ public:
 	void spielSpeichern() {
 		std::ofstream spielstand("spielstand.txt");
 		if (spielstand.is_open()) {
+			//damit der aktuelle Spieler zuerst eingeschrieben wird
 			for (const auto& spieler : spielerVector) {
 				spielstand << "Spieler: " << spieler->getId() << "," << spieler->getName() << "," << spieler->getIsAI() << ",";
 				spielstand << enumToString(spieler->getFarbe()) << "," << spieler->getScore() << std::endl; //hier Frage ob Score speichern oder sp�ter einfach berechnen aus den feldern? + Frage wegen Enum Farbe obs so passt
@@ -96,6 +103,8 @@ public:
 
 				}
 			}
+			//Id des aktiven Spielers zum Zeitpunkt des speicherns speichern
+			spielstand << "aktuellerSpielerId: " << getAktuellerSpielerId() << ",";
 			spielstand.close();
 			std::cout << "Daten wurden in 'spielstand.txt' gespeichert!" << std::endl;
 		}
@@ -190,6 +199,12 @@ public:
 						std::cout << "gelesene Feld Owner ID: " << ownerId << std::endl;
 					}
 				}
+				else if (line.find("aktuellerSpielerId: ") == 0) {
+					std::istringstream specStream(line.substr(20));
+					if (std::getline(specStream, entry, ',')) {
+						setAktuellerSpielerId(std::stoi(entry));
+					}
+				}
 			}
 		}
 		fReader.close();
@@ -199,7 +214,7 @@ public:
 	}
 
 	void spielInitialisieren() {
-		spielerVector.clear(); // Entfernt alle Spieler falls neue Spiel erstellt wird
+		spielerVector.clear(); // Entfernt alle Spieler falls neues Spiel erstellt wird
 		
 		spielfeld.reset();
 		int fieldSizeInput = 0;
@@ -215,6 +230,8 @@ public:
 			}
 			else {
 				std::cout << "Ungueltige Eingabe! Bitte erneut eingeben." << std::endl;
+				std::cin.clear();
+				std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Puffer leeren
 			}
 		}
 
@@ -357,7 +374,7 @@ public:
     return false;  // Wenn die Größe unerwartet ist
 	}
 
-	std::array<int, 2> getInput() {
+	std::array<int, 2> getInput(bool gameSaveable) {
 
 		while (true) {
 			std::string input;
@@ -368,7 +385,7 @@ public:
 				koordinaten[1] = letterToNumber(input[0]);
 				return koordinaten;
 			}
-			if (input[0]=='q' || input[0]=='Q') {
+			if ((input[0]=='q' || input[0]=='Q') && gameSaveable) {
 				pause(getSpiel());
 			}
 			else {
@@ -425,11 +442,34 @@ public:
 		}
 		// Normale Züge
 		bool running = true; // maybe noch anders lösen
+
+		//für erste runde nach spiel Laden
+		if (istSpielGeladen()) {
+			for (auto& spieler : spielerVector) {
+				if (spieler->getId() >= getAktuellerSpielerId()) {
+					if (!finished()) {
+						possibleWinner = spieler;
+						setAktuellerSpielerId(spieler->getId());
+						zug(spieler);
+					}
+					else {
+						running = false;
+						std::cout << "Spiel zu Ende" << std::endl;
+						if (possibleWinner != nullptr) {
+							std::cout << "Herzlichen Glueckwunsch, " << possibleWinner->getName() << "! Sie haben gewonnen!" << std::endl;
+						}
+						exit(0);
+						return;
+					}
+				}
+			}
+		}
 		while (running) {
 
 			for (auto& spieler : spielerVector) {
 				if (!finished()) {
 					possibleWinner = spieler;
+					setAktuellerSpielerId(spieler->getId());
 					zug(spieler);
 				} else {
 					running = false;
@@ -449,9 +489,11 @@ public:
 		if (besitztSpielerFelder(spieler)) {
 			if (!spieler->getIsAI()) { // Zug für Nicht-KI Spieler, wenn KI-Spieler, dann KIZug(spieler), also else-Anweisung
 				std::cout << std::endl;
+				std::cout << "Q - Pausenmenue" << std::endl;
+				std::cout << std::endl;
 				std::cout << spieler->getName() << ", bitte waehle ein Feld" << std::endl; //abfrage ob Spiel beenden und speichern
 
-				std::array<int, 2> koordinaten = getInput();
+				std::array<int, 2> koordinaten = getInput(true);
 				if (getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).getOwner() == spieler) {
 					getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).hinzufuegen();
 					getSpielfeld().splash();
@@ -494,7 +536,7 @@ public:
 		if (!spieler->getIsAI()) { // Erster Zug Methode für nicht KI Spieler, wenn KI ,dann else Anweisung
 			std::cout << std::endl;
 			std::cout << spieler->getName() << ", bitte waehle ein Startfeld" << std::endl;
-			std::array<int, 2> koordinaten = getInput();
+			std::array<int, 2> koordinaten = getInput(false);
 			if (getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).getAnzahl() == 0) {
 				getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).setOwner(spieler);
 				getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).setAnzahl(3);

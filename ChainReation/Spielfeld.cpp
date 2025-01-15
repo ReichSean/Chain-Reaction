@@ -48,8 +48,7 @@ public:
         #endif
 
 
-        std::cout << "Q - Pausenmenue" << std::endl;
-        std::cout << std::endl;
+
           
         std::cout << getAnsiCode(Farbe::Blau) << "   "; 
         for (int j = 0; j < size; ++j) {
