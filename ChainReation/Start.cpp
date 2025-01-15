@@ -31,14 +31,14 @@ void hauptmenue(Spiel& game) {
             std::cin >> auswahl;
 
             if (std::cin.fail() || auswahl < 1 || auswahl > 2) {
-                std::cin.clear(); // Fehlerstatus zur�cksetzen
+                std::cin.clear();
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Puffer leeren
                 std::cout << "Ungueltige Eingabe! Bitte gib 1 oder 2 ein." << std::endl;
                 std::cout << "Waehle eine Option (1-2): " << std::endl;
                 std::cout << std::endl;
             }
             else {
-                break; // G�ltige Eingabe
+                break;
             }
         }
 

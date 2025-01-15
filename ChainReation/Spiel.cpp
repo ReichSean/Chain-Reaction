@@ -14,7 +14,7 @@ private:
 	std::vector<std::shared_ptr<Spieler>> spielerVector;
 	std::unique_ptr<Spielfeld> spielfeld;
 	int aktuellerSpielerId;
-	bool istGeladen; // maybe noch initialisieren in Konstruktoren
+	bool istGeladen;
 
 public:
 	Spiel() : spielfeld(nullptr) {
@@ -86,13 +86,72 @@ public:
 		}
 	}
 
+	static int letterToNumber(char letter) {
+		switch (std::toupper(letter)) {
+		case 'A': return 0;
+		case 'B': return 1;
+		case 'C': return 2;
+		case 'D': return 3;
+		case 'E': return 4;
+		case 'F': return 5;
+		case 'G': return 6;
+		case 'H': return 7;
+		case 'I': return 8;
+		case 'J': return 9;
+		default: return -1; // Ungültiger Buchstabe
+		}
+	}
+
+	bool isValidNumber(char number) {
+		int num = number - '0';  // Konvertiere char zu int
+		int size = getSpielfeld().getSize();
+
+		if (size == 5) {
+			return num >= 1 && num <= 5;
+		}
+		else if (size == 7) {
+			return num >= 1 && num <= 7;
+		}
+		return false;
+	}
+
+	bool isValidLetter(char letter) {
+		letter = std::toupper(letter);
+		int size = getSpielfeld().getSize();
+
+		if (size == 5) {
+			return letter >= 'A' && letter <= 'E';
+		}
+		else if (size == 7) {
+			return letter >= 'A' && letter <= 'G';
+		}
+		return false;
+	}
+
+	bool istFarbeVerfuegbar(const Farbe& farbe) {
+		for (const auto& spieler : spielerVector) {
+			if (spieler->getFarbe() == farbe) {
+				return false;  // Farbe ist bereits vergeben
+			}
+		}
+		return true;  // Farbe ist verfügbar
+	}
+
+	bool istSpielGeladen() const {
+		return istGeladen;
+	}
+
+	bool besitztSpielerFelder(const std::shared_ptr<Spieler>& spieler) {
+		std::vector<Feld*> felderDesSpielers = besetzteFelder(spieler);
+		return !felderDesSpielers.empty();  // Gibt true zurück, wenn der Vektor nicht leer ist
+	}
+
 	void spielSpeichern() {
 		std::ofstream spielstand("spielstand.txt");
 		if (spielstand.is_open()) {
-			//damit der aktuelle Spieler zuerst eingeschrieben wird
 			for (const auto& spieler : spielerVector) {
 				spielstand << "Spieler: " << spieler->getId() << "," << spieler->getName() << "," << spieler->getIsAI() << ",";
-				spielstand << enumToString(spieler->getFarbe()) << "," << spieler->getScore() << std::endl; //hier Frage ob Score speichern oder sp�ter einfach berechnen aus den feldern? + Frage wegen Enum Farbe obs so passt
+				spielstand << enumToString(spieler->getFarbe()) << "," << spieler->getScore() << std::endl;
 			}
 			spielstand << "Feldgroesse: " << getSpielfeld().getSize() << std::endl;
 			for (int i = 0; i < getSpielfeld().getSize(); i++) {
@@ -139,23 +198,18 @@ public:
 
 					if (std::getline(specStream, entry, ',')) {
 						spielerId = std::stoi(entry);
-						std::cout << "gelesene Player ID: " << spielerId << std::endl;
 					}
 					if (std::getline(specStream, entry, ',')) {
 						name = entry;
-						std::cout << "gelesener Player name: " << name << std::endl;
 					}
 					if (std::getline(specStream, entry, ',')) {
 						isAI = stringToBool(entry);
-						std::cout << "gelesene Player AI: " << isAI << std::endl;
 					}
 					if (std::getline(specStream, entry, ',')) {
 						farbe = stringToEnum(entry);
-						std::cout << "gelesene Player Farbe: " << entry << std::endl;
 					}
 					if (std::getline(specStream, entry, ',')) {
 						score = std::stoi(entry);
-						std::cout << "gelesener Player score: " << score << std::endl;
 					}
 					hinzufügenSpieler(std::make_shared<Spieler>(farbe, name, isAI, spielerId));
 				}
@@ -164,27 +218,23 @@ public:
 					int zeilen;
 					if (std::getline(specStream, entry, ',')) {
 						zeilen = std::stoi(entry);
-						std::cout << "gelesene SpielfeldZeilen: " << zeilen << std::endl;
 					}
 					setSpielfeld(std::make_unique<Spielfeld>(zeilen));
 				}
 				else if (line.find("Feld: ") == 0) {
 					std::istringstream specStream(line.substr(6));
-					int anzahlPunkte;
-					int ownerId;
-					int zeile;
-					int spalte;
+					int anzahlPunkte = 0;
+					int ownerId = 0;
+					int zeile = 0;
+					int spalte = 0;
 					if (std::getline(specStream, entry, ',')) {
 						zeile = std::stoi(entry);
-						std::cout << "gelesene Feld Zeile: " << zeile << std::endl;
 					}
 					if (std::getline(specStream, entry, ',')) {
 						spalte = std::stoi(entry);
-						std::cout << "gelesene Feld Spalte: " << spalte << std::endl;
 					}
 					if (std::getline(specStream, entry, ',')) {
 						anzahlPunkte = std::stoi(entry);
-						std::cout << "gelesene Feld Punkte: " << anzahlPunkte << std::endl;
 					}
 					if (std::getline(specStream, entry, ',')) {
 						ownerId = std::stoi(entry);
@@ -197,11 +247,9 @@ public:
 								if (possibleOwner->getId() == ownerId) {
 									getSpielfeld().getFeld(zeile, spalte).setAnzahl(anzahlPunkte);
 									getSpielfeld().getFeld(zeile, spalte).setOwner(possibleOwner);
-									std::cout << "eingetragene Owner id: " << getSpielfeld().getFeld(zeile, spalte).getOwner()->getId() << std::endl;
 								}
 							}
 						}
-						std::cout << "gelesene Feld Owner ID: " << ownerId << std::endl;
 					}
 				}
 				else if (line.find("aktuellerSpielerId: ") == 0) {
@@ -258,12 +306,12 @@ public:
 
 			// Eingabe validieren
 			if (std::cin.fail() || anzahlSpieler < 1 || anzahlSpieler > 4) {
-				std::cin.clear(); // Fehlerstatus zurücksetzen
+				std::cin.clear();
 				std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Puffer leeren
 				std::cout << "Ungueltige Eingabe! Bitte gib eine Zahl zwischen 1 und 4 ein." << std::endl;
 			}
 			else {
-				gültigeAnzahlSpielerEingabe = true; // Gültige Eingabe
+				gültigeAnzahlSpielerEingabe = true;
 			}
 		}
 
@@ -273,21 +321,20 @@ public:
 			std::string teil;
 			std::cout << "--------------------------------------" << std::endl;
 			std::cout << "Bitte geben Sie einen Namen ein:" << std::endl;
+			//ermöglicht vergabe von Namen mit Leerzeichen
 			while (std::cin >> teil) {
 				spielerName += teil;
 				if (std::cin.peek() == '\n') {
-					break; // Ende der Zeile prüfen
+					break;
 				}
 				else {
 					spielerName += " ";
 				}
 			}
 
-			// Rot als Farbe für normale Spieler ausgeschlossen, da KI = Rot
-
 			int farbenWahl;
 			Farbe ausgewaehlteFarbe;
-
+			// Rot als Farbe für normale Spieler ausgeschlossen, da KI = Rot
 			std::cout << "Bitte waehlen Sie eine Farbe:\n";
 			std::cout << "1 - Gruen" << std::endl;
 			std::cout << "2 - Blau" << std::endl;
@@ -300,11 +347,11 @@ public:
 
 				// Überprüfen, ob die Eingabe gültig ist
 				if (std::cin.fail() || farbenWahl < 1 || farbenWahl > 5) {
-					std::cin.clear(); // Fehlerstatus zurücksetzen
+					std::cin.clear();
 					std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Puffer leeren
 
 					std::cout << "Ungueltige Wahl. Bitte erneut waehlen:\n";
-					continue; // Zurück zum Anfang der Schleife
+					continue;
 				}
 
 
@@ -343,7 +390,7 @@ public:
 		}
 
 		char KI;
-		bool gültigeKIEingabe = false; // maybe ändern und bei allen über so etwas abfragen (bsp gültige Eingabe)
+		bool gültigeKIEingabe = false;
 
 		if (anzahlSpieler == 1) {
 			// Wenn nur 1 Spieler, wird der KI-Spieler automatisch hinzugefügt
@@ -375,48 +422,6 @@ public:
 			}
 		}
 		istGeladen = false;
-	}
-
-	static int letterToNumber(char letter) {
-		switch (std::toupper(letter)) {
-		case 'A': return 0;
-		case 'B': return 1;
-		case 'C': return 2;
-		case 'D': return 3;
-		case 'E': return 4;
-		case 'F': return 5;
-		case 'G': return 6;
-		case 'H': return 7;
-		case 'I': return 8;
-		case 'J': return 9;
-		default: return -1; // Ungültiger Buchstabe
-		}
-	}
-
-	bool isValidNumber(char number) {
-		int num = number - '0';  // Konvertiere char zu int
-		int size = getSpielfeld().getSize();
-
-		if (size == 5) {
-			return num >= 1 && num <= 5;  // Für 5x5 Spielfeld, Zahlen von 1 bis 5
-		}
-		else if (size == 7) {
-			return num >= 1 && num <= 7;  // Für 7x7 Spielfeld, Zahlen von 1 bis 7
-		}
-		return false;  // Wenn die Größe unerwartet ist
-	}
-
-	bool isValidLetter(char letter) {
-		letter = std::toupper(letter);  // Konvertiere Buchstaben in Großbuchstaben
-		int size = getSpielfeld().getSize();
-
-		if (size == 5) {
-			return letter >= 'A' && letter <= 'E';
-		}
-		else if (size == 7) {
-			return letter >= 'A' && letter <= 'G';
-		}
-		return false;  // Wenn die Größe unerwartet ist
 	}
 
 	std::array<int, 2> getInput(bool gameSaveable) {
@@ -485,10 +490,9 @@ public:
 
 		if (!istSpielGeladen()) {
 			// Züge am Anfang
-
-			std::random_device rd; // Zufallszahlengenerator initialisieren
-			std::mt19937 gen(rd()); // Mersenne-Twister-Generator
-			std::shuffle(spielerVector.begin(), spielerVector.end(), gen); // Spieler mischen
+			std::random_device rd;
+			std::mt19937 gen(rd());
+			std::shuffle(spielerVector.begin(), spielerVector.end(), gen);
 
 
 			for (size_t i = 0; i < spielerVector.size(); ++i) {
@@ -497,9 +501,9 @@ public:
 			}
 		}
 		// Normale Züge
-		bool running = true; // maybe noch anders lösen
+		bool running = true;
 
-		//für erste runde nach spiel Laden
+		//für erste runde nach spiel laden
 		if (istSpielGeladen()) {
 			for (auto& spieler : spielerVector) {
 				if (spieler->getId() >= getAktuellerSpielerId()) {
@@ -563,10 +567,10 @@ public:
 		case 'r':
 		{
 			// Revanche
-			int spielfeldGroesse = spielfeld->getSize(); // Größe des aktuellen Spielfeldes speichern
-			spielfeld.reset(); // Reset des Spielfeldes
+			int spielfeldGroesse = spielfeld->getSize();
+			spielfeld.reset();
 			setSpielfeld(std::make_unique<Spielfeld>(spielfeldGroesse)); // Neues Spielfeld mit alter Größe
-			spielen(); // Erneut spielen
+			spielen();
 			break;
 		}
 		case 'B':
@@ -586,14 +590,77 @@ public:
 			system("clear");  // Linux/Mac
 #endif
 			std::cout << "Neues Spiel wird gestartet..." << std::endl;
-			spielInitialisieren(); // Initialisiere ein neues Spiel
-			spielen(); // Erneut spielen
+			spielInitialisieren();
+			spielen();
 			break;
 		}
 		default:
-			std::cout << "Ungültige Auswahl, bitte versuchen Sie es erneut." << std::endl;
-			nachSpielOptionen(); // Wiederhole die Optionenauswahl
+			std::cout << "Ungueltige Auswahl, bitte versuchen Sie es erneut." << std::endl;
+			nachSpielOptionen();
 			break;
+		}
+	}
+
+	// Erste Zugmethoden für Spieler und KI 
+
+	void ersterZug(std::shared_ptr<Spieler>& spieler) {
+		if (!spieler->getIsAI()) { // Erster Zug Methode für nicht KI Spieler, wenn KI ,dann else Anweisung
+			std::cout << std::endl;
+			std::cout << getAnsiCode(spieler->getFarbe()) << spieler->getName() << getAnsiCode(Farbe::Reset) << ", bitte waehle ein Startfeld (z.B. a4, b6, c3 usw.)" << std::endl;
+			std::array<int, 2> koordinaten = getInput(false);
+			if (getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).getAnzahl() == 0) {
+				getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).setOwner(spieler);
+				getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).setAnzahl(3);
+				spielfeld->splash();
+			}
+			else {
+				std::cout << "Waehle ein Feld, dass niemandem gehoert!" << std::endl;
+				ersterZug(spieler);
+			}
+
+		}
+		else {
+			ersterKIZug(spieler);
+		}
+	}
+
+	void ersterKIZug(std::shared_ptr<Spieler>& spieler) {
+		std::vector<Feld*> freieFelder;
+		std::cout << std::endl;
+		std::cout << spieler->getName() << " waehlt ein Startfeld..." << std::endl;
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+		for (int x = 1; x < spielfeld->getSize() - 1; x++) { //nur von 1 bis size-1, weil ein start am rand unvorteilhaft ist
+			for (int y = 1; y < spielfeld->getSize() - 1; y++) {
+				Feld& feld = spielfeld->getFeld(x, y);
+
+				// Überprüfen, ob das Feld frei ist
+				if (feld.getOwner() == nullptr) {
+					// Überprüfen, ob angrenzende Felder vom Gegner besetzt sind
+					bool nachbarBesetzt = false;
+					for (Feld* nachbar : getAngrenzendeFelder(x, y)) {
+						if (nachbar->getOwner() != nullptr) {
+							nachbarBesetzt = true;
+							break;
+						}
+					}
+
+					if (!nachbarBesetzt) {
+						freieFelder.push_back(&feld);
+					}
+				}
+			}
+		}
+		// Aus freien Feldern per Zufall eins auswählen für den Anfang
+		if (!freieFelder.empty()) {
+			std::random_device rd;
+			std::mt19937 gen(rd());
+			std::uniform_int_distribution<> dis(0, freieFelder.size() - 1);
+			int index = dis(gen);
+			Feld* feld = freieFelder[index];
+			feld->setOwner(spieler);
+			feld->setAnzahl(3);
+			spielfeld->splash();
 		}
 	}
 
@@ -618,9 +685,6 @@ public:
 				KIZug(spieler);
 			}
 		}
-		else {
-			std::cout << spieler->getName() << " besitzt keine Felder mehr." << std::endl;
-		}
 	}
 
 	void KIZug(std::shared_ptr<Spieler>& spieler) {
@@ -632,31 +696,22 @@ public:
 			Feld* bestesFeld = nullptr;
 			int hoechsterScore = -1;
 
-			// Iteriere über alle Felder im Spielfeld, um die Felder zu finden, die dem Spieler gehören
 			for (int x = 0; x < spielfeld->getSize(); ++x) {
 				for (int y = 0; y < spielfeld->getSize(); ++y) {
 					Feld& feld = spielfeld->getFeld(x, y);
 
-					// Überprüfen, ob das Feld dem Spieler gehört
 					if (feld.getOwner() == spieler) {
-						// Berechne den Score für das aktuelle Feld
 						int score = berechneScore(&feld, spieler, x, y); // Koordinaten an die Score-Berechnung übergeben
 						if (score > hoechsterScore) {
 							hoechsterScore = score;
-							bestesFeld = &feld; // Speichere das Feld mit dem höchsten Score
+							bestesFeld = &feld; // Wähle Feld mit dem höchsten Score
 						}
 					}
 				}
 			}
-
 			// Erhöhe das Feld mit dem höchsten Score
-			if (bestesFeld != nullptr) {
-				bestesFeld->hinzufuegen();
-				spielfeld->splash();
-			}
-		}
-		else {
-			std::cout << spieler->getName() << " besitzt keine Felder mehr." << std::endl;
+			bestesFeld->hinzufuegen();
+			spielfeld->splash();
 		}
 	}
 
@@ -666,17 +721,16 @@ public:
 		int score = 0;
 
 		// 1. Punkte für die Anzahl der Kugeln auf dem eigenen Feld
-		score += feld->getAnzahl() * 2; // Mehr Punkte für mehr Kugeln
+		score += feld->getAnzahl() * 2;
 
 		// 2. Punkte für angrenzende eigene Felder
 		for (Feld* nachbar : getAngrenzendeFelder(x, y)) {
 			if (nachbar->getOwner() == spieler) {
-				score += 2; // Mehr Punkte für angrenzende eigene Felder
+				score += 2;
 			}
 		}
 
 		// 3. Bonuspunkte für angrenzende Felder mit 3 Kugeln, wenn eigenes Feld auch 3 kugeln hat
-
 		if (feld->getAnzahl() == 3) {
 			for (Feld* nachbar : getAngrenzendeFelder(x, y)) {
 				if (nachbar->getAnzahl() == 3) {
@@ -690,8 +744,7 @@ public:
 			}
 		}
 
-
-		// Abzüge für angrenzende gegnerische Felder mit mehr Kugeln
+		// 4. Abzüge für angrenzende gegnerische Felder mit mehr Kugeln
 		for (Feld* nachbar : getAngrenzendeFelder(x, y)) {
 			if (nachbar->getOwner() != spieler && nachbar->getAnzahl() > feld->getAnzahl()) {
 				if (nachbar->getAnzahl() == 3) {
@@ -726,84 +779,21 @@ public:
 			{x, y + 1}  // Rechts
 		};
 
-		// Überprüfen der angrenzenden Felder und hinzufügen, wenn gültig
+		// Überprüfen der angrenzenden Felder und hinzufügen wenn gültig
 		for (const auto& pos : benachbarteFelder) {
 			int nx = pos[0];
 			int ny = pos[1];
 
-			// Randwerte checken und nur Felder nehmen, die spielern gehören
+			// Randwerte checken und nur Felder nehmen, die Spielern gehören
 			if (nx >= 0 && nx < spielfeld->getSize() && ny >= 0 && ny < spielfeld->getSize()) {
 				Feld& nachbarFeld = spielfeld->getFeld(nx, ny);
-				if (nachbarFeld.getOwner() != nullptr) { // Überprüfen, ob der Owner nicht null ist
+				if (nachbarFeld.getOwner() != nullptr) {
 					angrenzendeFelder.push_back(&nachbarFeld);
 				}
 			}
 		}
 
 		return angrenzendeFelder;
-	}
-
-	// Erste Zugmethoden für Spieler und KI 
-
-	void ersterZug(std::shared_ptr<Spieler>& spieler) {
-		if (!spieler->getIsAI()) { // Erster Zug Methode für nicht KI Spieler, wenn KI ,dann else Anweisung
-			std::cout << std::endl;
-			std::cout << getAnsiCode(spieler->getFarbe()) << spieler->getName() << getAnsiCode(Farbe::Reset) << ", bitte waehle ein Startfeld (z.B. a4, b6, c3 usw.)" << std::endl;
-			std::array<int, 2> koordinaten = getInput(false);
-			if (getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).getAnzahl() == 0) {
-				getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).setOwner(spieler);
-				getSpielfeld().getFeld(koordinaten[0], koordinaten[1]).setAnzahl(3);
-				spielfeld->splash();
-			}
-			else {
-				std::cout << "Waehle ein Feld, dass niemandem gehoert!" << std::endl;
-				ersterZug(spieler);
-			}
-
-		}
-		else {
-			ersterKIZug(spieler);
-		}
-	}
-
-	void ersterKIZug(std::shared_ptr<Spieler>& spieler) {
-		std::vector<Feld*> freieFelder;
-		std::cout << std::endl;
-		std::cout << spieler->getName() << " waehlt ein Startfeld..." << std::endl;
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
-		for (int x = 1; x < spielfeld->getSize() - 1; x++) {			//nur von 1 bis size-1, weil ein start am rand unvorteilhaft ist
-			for (int y = 1; y < spielfeld->getSize() - 1; y++) {
-				Feld& feld = spielfeld->getFeld(x, y);
-
-				// Überprüfen, ob das Feld frei ist
-				if (feld.getOwner() == nullptr) {
-					// Überprüfen, ob angrenzende Felder vom Gegner besetzt sind
-					bool nachbarBesetzt = false;
-					for (Feld* nachbar : getAngrenzendeFelder(x, y)) {
-						if (nachbar->getOwner() != nullptr) {
-							nachbarBesetzt = true;
-							break;
-						}
-					}
-
-					if (!nachbarBesetzt) {
-						freieFelder.push_back(&feld);
-					}
-				}
-			}
-		}
-		// Aus freien Feldern per Zufall eins auswählen für den Anfang
-		if (!freieFelder.empty()) {
-			std::random_device rd;  // Zufallszahlengenerator initialisieren
-			std::mt19937 gen(rd());
-			std::uniform_int_distribution<> dis(0, freieFelder.size() - 1);
-			int index = dis(gen);
-			Feld* feld = freieFelder[index];
-			feld->setOwner(spieler);
-			feld->setAnzahl(3);  // Erhöhe die Anzahl auf dem Feld  
-			spielfeld->splash();  // Zeige das Spielfeld an
-		}
 	}
 
 	// Rückgabe von allen Feldern, die dem Spieler gehören
@@ -821,13 +811,6 @@ public:
 		return felderDesSpielers;
 	}
 
-	// Prüfen ob ein Spieler Felder besitzt
-
-	bool besitztSpielerFelder(const std::shared_ptr<Spieler>& spieler) {
-		std::vector<Feld*> felderDesSpielers = besetzteFelder(spieler);
-		return !felderDesSpielers.empty();  // Gibt true zurück, wenn der Vektor nicht leer ist
-	}
-
 	bool finished() {
 		int spielerMitFeldern = 0;
 		for (const auto& spieler : spielerVector) {
@@ -836,18 +819,5 @@ public:
 			}
 		}
 		return spielerMitFeldern <= 1; // Gibt true zurück, wenn nur noch ein Spieler oder keiner Felder besitzt
-	}
-
-	bool istFarbeVerfuegbar(const Farbe& farbe) {
-		for (const auto& spieler : spielerVector) {
-			if (spieler->getFarbe() == farbe) {
-				return false;  // Farbe ist bereits vergeben
-			}
-		}
-		return true;  // Farbe ist verfügbar
-	}
-
-	bool istSpielGeladen() const {
-		return istGeladen;
 	}
 };

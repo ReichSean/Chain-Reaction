@@ -12,7 +12,7 @@ public:
 
     Feld() : anzahl(0), owner(nullptr) {}
 
-    Feld(int anzahl, std::shared_ptr<Spieler> owner) // =0 unn�tig
+    Feld(int anzahl, std::shared_ptr<Spieler> owner)
         : anzahl(anzahl), owner(owner) {
     }
 
@@ -22,7 +22,7 @@ public:
     int getAnzahl() const { return anzahl; }
 
     void setOwner(std::shared_ptr<Spieler> spieler) {
-        owner = spieler; // Zuweisung eines shared_ptr
+        owner = spieler;
     }
 
     std::shared_ptr<Spieler> getOwner() const { return owner; }

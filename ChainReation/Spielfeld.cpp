@@ -62,14 +62,14 @@ public:
             std::cout << getAnsiCode(Farbe::Blau) << (i + 1) << " ";
 
             if (i + 1 < 10) {
-                std::cout << " "; //Platz, weil 10 l�nger als 1-9
+                std::cout << " "; //Platz, weil 10 länger als 1-9
             }
 
             for (int j = 0; j < size; ++j) {
                 const Feld& feld = *spielfeld[i][j];
 
                 if (feld.getAnzahl() == 0) {
-                    // Wenn das Feld leer ist, wei�e Null ausgeben
+                    // Wenn das Feld leer ist, weiße Null ausgeben
                     std::cout << getAnsiCode(Farbe::Weiss) << "0" << getAnsiCode(Farbe::Reset) << " ";
                 }
                 else {
@@ -78,7 +78,7 @@ public:
                         std::cout << getAnsiCode(feld.getOwner()->getFarbe()) << feld.getAnzahl() << getAnsiCode(Farbe::Reset) << " ";
                     }
                     else {
-                        // Falls kein Besitzer, aber Anzahl > 0, trotzdem Wei� verwenden
+                        // Falls kein Besitzer, aber Anzahl > 0, trotzdem Weiß verwenden
                         std::cout << getAnsiCode(Farbe::Weiss) << feld.getAnzahl() << getAnsiCode(Farbe::Reset) << " ";
                     }
                 }
@@ -162,10 +162,8 @@ public:
     }
 
     void score() {
-        // Map zur Speicherung von Spielern und deren Scores
         std::map<std::shared_ptr<Spieler>, int> scores;
 
-        // Alle Felder durchgehen
         for (int x = 0; x < size; ++x) {
             for (int y = 0; y < size; ++y) {
                 Feld& feld = getFeld(x, y);
@@ -174,7 +172,6 @@ public:
                 // Felder ohne Besitzer ignorieren
                 if (owner == nullptr) continue;
 
-                // Score des Spielers um 1 erh�hen
                 scores[owner]++;
             }
         }
