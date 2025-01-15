@@ -201,6 +201,23 @@ public:
 	void spielInitialisieren() {
 		spielerVector.clear(); // Entfernt alle Spieler falls neue Spiel erstellt wird
 		
+		spielfeld.reset();
+		int fieldSizeInput = 0;
+		while (fieldSizeInput != 1 && fieldSizeInput != 2) {
+			std::cout << "Bitte Spielfeldgroesse bestimmen:\n";
+			std::cout << "1 - 5x5\n2 - 7x7" << std::endl;
+			std::cin >> fieldSizeInput;
+			if (fieldSizeInput == 1) {
+				setSpielfeld(std::make_unique<Spielfeld>(5));
+			}
+			else if (fieldSizeInput == 2) {
+				setSpielfeld(std::make_unique<Spielfeld>(7));
+			}
+			else {
+				std::cout << "Ungueltige Eingabe! Bitte erneut eingeben." << std::endl;
+			}
+		}
+
 		bool gültigeAnzahlSpielerEingabe = false;
 		int anzahlSpieler;
 
@@ -220,14 +237,6 @@ public:
 			}
 		}
 		
-		if(anzahlSpieler <= 2){
-			spielfeld.reset(new Spielfeld(5)); 
-			setSpielfeld(std::make_unique<Spielfeld>(5));
-		}
-		else {
-			spielfeld.reset(new Spielfeld(7)); 
-			setSpielfeld(std::make_unique<Spielfeld>(7));
-		}
 		for (int i = 0; i < anzahlSpieler; i++) {
 			std::string spielerName;
 			std::string spielerFarbe;
@@ -274,7 +283,7 @@ public:
 		}
 
 		char KI;
-		bool gültigeKIEingabe = false;
+		bool gültigeKIEingabe = false; // maybe ändern und bei allen über so etwas abfragen (bsp gültige Eingabe)
 
 		if (anzahlSpieler == 1) {
 			// Wenn nur 1 Spieler, wird der KI-Spieler automatisch hinzugefügt
