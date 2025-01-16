@@ -478,7 +478,7 @@ public:
 				std::cout << "Spiel wird beendet." << std::endl;
 				exit(0);
 			default:
-				std::cout << "Ungültige Eingabe! Bitte wähle P, N oder Q." << std::endl;
+				std::cout << "Ungueltige Eingabe! Bitte wähle P, N oder Q." << std::endl;
 				break;
 			}
 		}
@@ -694,7 +694,7 @@ public:
 			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
 			Feld* bestesFeld = nullptr;
-			int hoechsterScore = -1;
+			int hoechsterScore = std::numeric_limits<int>::min();
 
 			for (int x = 0; x < spielfeld->getSize(); ++x) {
 				for (int y = 0; y < spielfeld->getSize(); ++y) {
